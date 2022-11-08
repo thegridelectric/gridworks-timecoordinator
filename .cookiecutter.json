@@ -1,0 +1,14 @@
+{
+  "_output_dir": "/Users/jess/Coding/GridWorks/Platform",
+  "_template": "gh:cjolowicz/cookiecutter-hypermodern-python",
+  "author": "Jessica Millar",
+  "copyright_year": "2022",
+  "development_status": "Development Status :: 2 - Pre-Alpha",
+  "email": "jmillar@gridworks-consulting.com",
+  "friendly_name": "Gridworks Timecoordinator",
+  "github_user": "thegridelectric",
+  "license": "MIT",
+  "package_name": "gwtime",
+  "project_name": "gridworks-timecoordinator",
+  "version": "0.0.0"
+}

@@ -1,0 +1,193 @@
+{
+    "vhosts": [
+      {
+        "name": "dw1__1"
+      }
+    ],
+    "permissions": [
+      {
+        "user": "smqPublic",
+        "vhost": "dw1__1",
+        "configure": ".*",
+        "write": ".*",
+        "read": ".*"
+      }
+    ],
+    "exchanges": [
+      {
+        "name": "atomictnodemic_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": false,
+        "arguments": {}
+      },
+      {
+        "name": "atomictnode_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": true,
+        "arguments": {}
+      },
+      {
+        "name": "marketmakermic_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": false,
+        "arguments": {}
+      },
+      {
+        "name": "marketmaker_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": true,
+        "arguments": {}
+      },
+      {
+        "name": "supervisormic_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": false,
+        "arguments": {}
+      },
+      {
+        "name": "supervisor_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": true,
+        "arguments": {}
+      },
+      {
+        "name": "timecoordinatormic_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": false,
+        "arguments": {}
+      },
+      {
+        "name": "timecoordinator_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": true,
+        "arguments": {}
+      },
+      {
+        "name": "worldmic_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": false,
+        "arguments": {}
+      },
+      {
+        "name": "world_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": true,
+        "arguments": {}
+      },
+      {
+        "name": "ear_tx",
+        "vhost": "dw1__1",
+        "type": "topic",
+        "durable": true,
+        "auto_delete": false,
+        "internal": true,
+        "arguments": {}
+      }
+    ],
+    "queues": [
+      {
+        "name": "s3_ear_q",
+        "vhost": "dw1__1",
+        "durable": true,
+        "auto_delete": false,
+        "arguments": {}
+      }
+    ],
+    "bindings": [
+      {
+        "source": "amq.topic",
+        "vhost": "dw1__1",
+        "destination": "ear_tx",
+        "destination_type": "exchange",
+        "routing_key": "#",
+        "arguments": {}
+      },
+      {
+        "source": "ear_tx",
+        "vhost": "dw1__1",
+        "destination": "dummy_ear_queue",
+        "destination_type": "queue",
+        "routing_key": "#",
+        "arguments": {}
+      },
+      {
+        "source": "atomictnodemic_tx",
+        "vhost": "dw1__1",
+        "destination": "timecoordinator_tx",
+        "destination_type": "exchange",
+        "routing_key": "*.*.atomictnode.*.timecoordinator.*",
+        "arguments": {}
+      },
+      {
+        "source": "atomictnodemic_tx",
+        "vhost": "dw1__1",
+        "destination": "ear_tx",
+        "destination_type": "exchange",
+        "routing_key": "#",
+        "arguments": {}
+      },
+      {
+        "source": "marketmakermic_tx",
+        "vhost": "dw1__1",
+        "destination": "ear_tx",
+        "destination_type": "exchange",
+        "routing_key": "#",
+        "arguments": {}
+      },
+      {
+        "source": "supervisormic_tx",
+        "vhost": "dw1__1",
+        "destination": "ear_tx",
+        "destination_type": "exchange",
+        "routing_key": "#",
+        "arguments": {}
+      },
+      {
+        "source": "timecoordinatormic_tx",
+        "vhost": "dw1__1",
+        "destination": "ear_tx",
+        "destination_type": "exchange",
+        "routing_key": "#",
+        "arguments": {}
+      },
+      {
+        "source": "worldmic_tx",
+        "vhost": "dw1__1",
+        "destination": "ear_tx",
+        "destination_type": "exchange",
+        "routing_key": "#",
+        "arguments": {}
+      }
+    ]
+  }
+  
