@@ -21,6 +21,8 @@ import gwtime.property_format as property_format
 import gwtime.utils as utils
 from gwtime.config import Settings
 from gwtime.enums import GNodeRole
+from gwtime.enums import MessageCategory
+from gwtime.enums import MessageCategorySymbol
 from gwtime.errors import SchemaError
 from gwtime.schemata import HeartbeatA
 from gwtime.schemata import SimTimestep
@@ -47,14 +49,6 @@ RabbitRolebyRole: Dict[GNodeRole, RabbitRole] = {
     GNodeRole.TimeCoordinator: RabbitRole.timecoordinator,
     GNodeRole.World: RabbitRole.world,
 }
-
-
-class RoutingKeyType(enum.Enum):
-    JSON_DIRECT_MESSAGE = "json"
-    JSON_BROADCAST = "jsonb"
-    GW_MQTT = "mqtt"
-    GW_SERIAL = "s"
-    GW_PUBSUB = "pubsub"
 
 
 class OnSendMessageDiagnostic(enum.Enum):
@@ -233,7 +227,7 @@ class ActorBase(ABC):
     def send_message(
         self,
         payload: HeartbeatA,
-        routing_key_type: RoutingKeyType = RoutingKeyType.JSON_DIRECT_MESSAGE,
+        message_category: MessageCategory = MessageCategory.RabbitJsonBroadcast,
         to_role: Optional[GNodeRole] = None,
         to_g_node_alias: Optional[str] = None,
         radio_channel: Optional[str] = None,
@@ -259,7 +253,7 @@ class ActorBase(ABC):
             return OnSendMessageDiagnostic.STOPPING_SO_NOT_SENDING
         if self._stopped:
             return OnSendMessageDiagnostic.STOPPED_SO_NOT_SENDING
-        if routing_key_type is RoutingKeyType.JSON_DIRECT_MESSAGE:
+        if message_category is MessageCategory.RabbitJsonDirect:
             if not isinstance(to_role, GNodeRole):
                 raise Exception("Must include to_role for a direct message")
             if not property_format.is_lrd_alias_format(to_g_node_alias):
@@ -271,7 +265,7 @@ class ActorBase(ABC):
                 payload=payload,
                 to_g_node_alias=to_g_node_alias,
             )
-        elif routing_key_type is RoutingKeyType.JSON_BROADCAST:
+        elif message_category is MessageCategory.RabbitJsonBroadcast:
             if not property_format.is_lrd_alias_format(radio_channel):
                 raise Exception(
                     f"radio_channel must have LrdAliasFormat. Got {radio_channel}"
@@ -280,7 +274,7 @@ class ActorBase(ABC):
                 payload=payload, radio_channel=radio_channel
             )
         else:
-            raise Exception(f"Does not handle RoutingKeyType {routing_key_type}")
+            raise Exception(f"Does not handle RoutingKeyType {message_category}")
 
         if "MessageId" in payload.as_dict():
             correlation_id = payload.MessageId
@@ -885,16 +879,21 @@ class ActorBase(ABC):
             raise SchemaError(f"{e}")
         return type_name
 
-    def broadcast_routing_key(self, payload: HeartbeatA, radio_channel: str) -> str:
-        msg_type = RoutingKeyType.JSON_BROADCAST.value
+    def broadcast_routing_key(
+        self, payload: HeartbeatA, radio_channel: Optional[str]
+    ) -> str:
+        msg_type = MessageCategorySymbol.rjb.value
         from_lrh_alias = self.alias.replace(".", "-")
         from_role = self.rabbit_role.value
-        return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}.{radio_channel}"
+        if radio_channel is None:
+            return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}"
+        else:
+            return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}.{radio_channel}"
 
     def direct_routing_key(
         self, to_role: GNodeRole, payload: HeartbeatA, to_g_node_alias: str
     ) -> str:
-        msg_type = RoutingKeyType.JSON_DIRECT_MESSAGE.value
+        msg_type = MessageCategorySymbol.rj.value
         from_lrh_alias = self.alias.replace(".", "-")
         from_role = self.rabbit_role.value
         to_role_val = RabbitRolebyRole[to_role].value

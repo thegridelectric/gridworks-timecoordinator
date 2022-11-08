@@ -19,7 +19,7 @@ classifiers = [
 Changelog = "https://github.com/thegridelectric/gridworks-timecoordinator/releases"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.8,<4.0"
 click = ">=8.0.1"
 pydantic = "^1.10.2"
 pytz = "^2022.6"
@@ -29,6 +29,7 @@ types-requests = "^2.28.11.2"
 python-dotenv = "^0.21.0"
 requests = "^2.28.1"
 pendulum = "^2.1.2"
+ipykernel = "^6.17.0"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"

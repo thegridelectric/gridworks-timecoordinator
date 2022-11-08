@@ -2,6 +2,7 @@
 import logging
 import traceback
 from abc import abstractmethod
+from typing import Any
 from typing import Optional
 
 import pendulum
@@ -9,6 +10,7 @@ import pendulum
 from gwtime.actor_base import ActorBase
 from gwtime.config import Settings
 from gwtime.enums import GNodeRole
+from gwtime.enums import MessageCategory
 from gwtime.schemata import HeartbeatA
 from gwtime.schemata import Ready
 from gwtime.schemata import Ready_Maker
@@ -23,15 +25,6 @@ LOGGER = logging.getLogger(__name__)
 
 LOGGER.setLevel(logging.INFO)
 
-import enum
-
-
-class RoutingKeyType(enum.Enum):
-    JSON_DIRECT_MESSAGE = "rj"
-    JSON_BROADCAST = "rjb"
-    GW_MQTT = "mq"
-    GW_SERIAL = "s"
-
 
 class AtnActorBase(ActorBase):
     def __init__(self, settings: Settings):
@@ -39,7 +32,7 @@ class AtnActorBase(ActorBase):
         self.latest_time_unix_s: Optional[int] = None
 
     ########################
-    ## Sends
+    # Sends
     ########################
 
     def send_timestep(self, payload: SimTimestep) -> None:
@@ -47,27 +40,26 @@ class AtnActorBase(ActorBase):
             LOGGER.info(f"NOT SENDING. payload must be HackState, got {type(payload)} ")
             return None
         self.send_message(
-            payload=payload,
-            routing_key_type=RoutingKeyType.JSON_BROADCAST,
-            radio_channel="time",
+            payload=payload, message_category=MessageCategory.RabbitJsonBroadcast
         )
 
     def prepare_for_death(self) -> None:
         self.actor_main_stopped = True
 
     ########################
-    ## Receives
+    # Receives
     ########################
 
     def route_message(self, from_role: GNodeRole, payload: HeartbeatA) -> None:
-        match payload.TypeName:
-            case Ready_Maker.type_name:
-                if from_role == GNodeRole.MarketMaker:
-                    try:
-                        self.g_node_ready_received(payload)
-                    except:
-                        LOGGER.warning("Error in g_node_ready_received")
-                        LOGGER.warning(traceback.format_exc(True))
+        if payload.TypeName == Ready_Maker.type_name:
+            try:
+                self.g_node_ready_received(payload)
+            except:
+                LOGGER.warning("Error in g_node_ready_received")
+                LOGGER.warning(traceback.format_exc(True))
+        else:
+            LOGGER.info(f"Does not process TypeName {payload.TypeName}")
+            return
 
     @abstractmethod
     def g_node_ready_received(self, payload: Ready) -> None:
