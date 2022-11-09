@@ -31,6 +31,7 @@ from gwtime.schemata import SimTimestep
 class RabbitRole(StrEnum):
     atomictnode = auto()
     marketmaker = auto()
+    supervisor = auto()
     timecoordinator = auto()
     world = auto()
 
@@ -38,6 +39,7 @@ class RabbitRole(StrEnum):
 RoleByRabbitRole: Dict[RabbitRole, GNodeRole] = {
     RabbitRole.atomictnode: GNodeRole.AtomicTNode,
     RabbitRole.marketmaker: GNodeRole.MarketMaker,
+    RabbitRole.supervisor: GNodeRole.Supervisor,
     RabbitRole.timecoordinator: GNodeRole.TimeCoordinator,
     RabbitRole.world: GNodeRole.World,
 }
@@ -46,6 +48,7 @@ RoleByRabbitRole: Dict[RabbitRole, GNodeRole] = {
 RabbitRolebyRole: Dict[GNodeRole, RabbitRole] = {
     GNodeRole.AtomicTNode: RabbitRole.atomictnode,
     GNodeRole.MarketMaker: RabbitRole.marketmaker,
+    GNodeRole.Supervisor: RabbitRole.supervisor,
     GNodeRole.TimeCoordinator: RabbitRole.timecoordinator,
     GNodeRole.World: RabbitRole.world,
 }
@@ -63,6 +66,7 @@ class OnReceiveMessageDiagnostic(enum.Enum):
     TYPE_NAME_DECODING_PROBLEM = "TypeNameDecodingProblem"
     UNKNOWN_ROUTING_KEY_TYPE = "UnknownRoutingKeyType"
     UNHANDLED_ROUTING_KEY_TYPE = "UnhandledRoutingKeyType"
+    UNKNOWN_MESSAGE_CATEGORY_SYMBOL = "UnknownMessageCategorySymbol"
     UNKNOWN_TYPE_NAME = "UnknownTypeName"
     FROM_GNODE_DECODING_PROBLEM = "FromGNodeDecodingProblem"
     UNKONWN_GNODE = "UnknownGNode"
@@ -87,10 +91,12 @@ class ActorBase(ABC):
         self,
         settings: Settings,
     ):
+        self.latest_routing_key: Optional[str] = None
         self.settings: Settings = settings
         self.agent_shutting_down_part_one: bool = False
         self.alias: str = settings.g_node_alias
-        self.rabbit_role: RabbitRole = RabbitRole(settings.rabbit.role_value)
+        self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
+        self.rabbit_role: RabbitRole = RabbitRolebyRole[self.g_node_role]
         self.actor_main_stopped: bool = False
 
         adder = "-F" + str(uuid.uuid4()).split("-")[0][0:3]
@@ -165,27 +171,28 @@ class ActorBase(ABC):
         :param pika.Spec.BasicProperties: properties
         :param bytes body: The message body
         """
-
-        LOGGER.info(
+        self.latest_routing_key = basic_deliver.routing_key
+        LOGGER.warning(
             f"In actor_base on_message. Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
         )
         self.acknowledge_message(basic_deliver.delivery_tag)
         try:
-            type_name = self.get_payload_type_name(basic_deliver, body)
+            type_name = self.get_payload_type_name(basic_deliver)
         except SchemaError:
             return
+        self.type_name = type_name
 
         if type_name not in api_types.version_by_type_name().keys():
             self._latest_on_message_diagnostic = (
                 OnReceiveMessageDiagnostic.UNKNOWN_TYPE_NAME
             )
-            LOGGER.info(
+            LOGGER.warning(
                 f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {type_name}"
             )
             return
 
         try:
-            payload_as_tuple = api_types.TypeMakerByName[type_name].type_to_tuple(body)
+            payload = api_types.TypeMakerByName[type_name].type_to_tuple(body)
         except Exception as e:
             LOGGER.warning(
                 f"TypeName for incoming message claimed to be {type_name}, but was not true! Failed to make a {api_types.TypeMakerByName[type_name].tuple}"
@@ -200,34 +207,41 @@ class ActorBase(ABC):
             self._latest_on_message_diagnostic = (
                 OnReceiveMessageDiagnostic.FROM_GNODE_DECODING_PROBLEM
             )
-            LOGGER.info(f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}")
+            LOGGER.warning(
+                f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}"
+            )
             return
         try:
-            from_role = self.role_from_routing_key(routing_key)
+            from_role = self.from_role_from_routing_key(routing_key)
         except SchemaError as e:
             self._latest_on_message_diagnostic = (
                 OnReceiveMessageDiagnostic.FROM_GNODE_DECODING_PROBLEM
             )
-            LOGGER.info(f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}")
+            LOGGER.warning(
+                f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}"
+            )
             return
 
         self._latest_on_message_diagnostic = (
             OnReceiveMessageDiagnostic.TO_DIRECT_ROUTING
         )
         self.route_message(
+            from_alias=from_alias,
             from_role=from_role,
-            payload=payload_as_tuple,
+            payload=payload,
         )
 
     @abstractmethod
-    def route_message(self, from_role: GNodeRole, payload: HeartbeatA) -> None:
+    def route_message(
+        self, from_alias: str, from_role: GNodeRole, payload: HeartbeatA
+    ) -> None:
         raise NotImplementedError
 
     @no_type_check
     def send_message(
         self,
         payload: HeartbeatA,
-        message_category: MessageCategory = MessageCategory.RabbitJsonBroadcast,
+        message_category: MessageCategory = MessageCategory.RabbitJsonDirect,
         to_role: Optional[GNodeRole] = None,
         to_g_node_alias: Optional[str] = None,
         radio_channel: Optional[str] = None,
@@ -253,6 +267,12 @@ class ActorBase(ABC):
             return OnSendMessageDiagnostic.STOPPING_SO_NOT_SENDING
         if self._stopped:
             return OnSendMessageDiagnostic.STOPPED_SO_NOT_SENDING
+
+        if "MessageId" in payload.as_dict():
+            correlation_id = payload.MessageId
+        else:
+            correlation_id = str(uuid.uuid4())
+
         if message_category is MessageCategory.RabbitJsonDirect:
             if not isinstance(to_role, GNodeRole):
                 raise Exception("Must include to_role for a direct message")
@@ -265,6 +285,13 @@ class ActorBase(ABC):
                 payload=payload,
                 to_g_node_alias=to_g_node_alias,
             )
+
+            properties = pika.BasicProperties(
+                reply_to=self.queue_name,
+                app_id=self.alias,
+                type=message_category.RabbitJsonDirect,
+                correlation_id=correlation_id,
+            )
         elif message_category is MessageCategory.RabbitJsonBroadcast:
             if not property_format.is_lrd_alias_format(radio_channel):
                 raise Exception(
@@ -273,20 +300,14 @@ class ActorBase(ABC):
             routing_key = self.broadcast_routing_key(
                 payload=payload, radio_channel=radio_channel
             )
+            properties = pika.BasicProperties(
+                reply_to=self.queue_name,
+                app_id=self.alias,
+                type=message_category.RabbitJsonBroadcast,
+                correlation_id=correlation_id,
+            )
         else:
-            raise Exception(f"Does not handle RoutingKeyType {message_category}")
-
-        if "MessageId" in payload.as_dict():
-            correlation_id = payload.MessageId
-        else:
-            correlation_id = str(uuid.uuid4())
-
-        properties = pika.BasicProperties(
-            reply_to=self.queue_name,
-            app_id=self.alias,
-            type=RoutingKeyType.JSON_DIRECT_MESSAGE.value,
-            correlation_id=correlation_id,
-        )
+            raise Exception(f"Does not handle MessageCategory {message_category}")
 
         if self._publish_channel is None:
             LOGGER.error(f"No publish channel so not sending {routing_key}")
@@ -526,9 +547,9 @@ class ActorBase(ABC):
         :param pika.frame.Method _unused_frame: The Queue.DeclareOk frame
         :param str|unicode userdata: Extra user data (queue name)
         """
-        lru_alias = utils.dot_to_underscore(self.alias)
-
-        direct_message_to_me_binding = f"*.*.*.*.{lru_alias}"
+        lrh_alias = self.alias.replace(".", "-")
+        rj = MessageCategorySymbol.rj.value
+        direct_message_to_me_binding = f"{rj}.*.*.*.*.{lrh_alias}"
 
         LOGGER.info(
             "Binding %s to %s with %s",
@@ -849,7 +870,7 @@ class ActorBase(ABC):
     ########################
 
     @no_type_check
-    def get_payload_type_name(self, basic_deliver, body: bytes) -> str:
+    def get_payload_type_name(self, basic_deliver) -> str:
         """The TypeName tis a string hat provides the strongly typed specification
             (API/ABI) for the incoming message. This is similar to knowing
             the protobuf name/method or the ABI name/method.
@@ -871,8 +892,8 @@ class ActorBase(ABC):
         # might be easier for developers to grock.
 
         try:
-            type_name = self.type_name_from_routing_key_and_payload(
-                routing_key=basic_deliver.routing_key, payload=body
+            type_name = self.type_name_from_routing_key(
+                routing_key=basic_deliver.routing_key,
             )
         except SchemaError as e:
             LOGGER.info(f"Could not figure out TypeName: {e}")
@@ -898,10 +919,15 @@ class ActorBase(ABC):
         from_role = self.rabbit_role.value
         to_role_val = RabbitRolebyRole[to_role].value
         to_lrh_alias = to_g_node_alias.replace(".", "-")
-        return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}.{to_role_val}.{to_lrh_alias}"
+        type_name_lrh = payload.TypeName.replace(".", "-")
 
-    def type_name_from_routing_key_and_payload(
-        self, routing_key: str, payload: bytes
+        direct_routing_key = f"{msg_type}.{from_lrh_alias}.{from_role}.{type_name_lrh}.{to_role_val}.{to_lrh_alias}"
+        LOGGER.warning(direct_routing_key)
+        return direct_routing_key
+
+    def type_name_from_routing_key(
+        self,
+        routing_key: str,
     ) -> str:
         """Returns the type alias of the message given the routing key. Raises a SchemaError
         exception if there is a problem decoding the type alias, or if it does not have
@@ -920,49 +946,51 @@ class ActorBase(ABC):
         Args:
             routing_key (str): This is the basic_deliver.routing_key string
             in a rabbit message
-            payload (bytes): The body in the on_message
 
         Returns:
-            str: the TypeName of the payload, in left-right-dot format
+            str: the TypeName of the payload, in Lrd format
         """
         routing_key_words = routing_key.split(".")
+        if len(routing_key_words) < 4:
+            self._latest_on_message_diagnostic = (
+                OnReceiveMessageDiagnostic.UNKNOWN_ROUTING_KEY_TYPE
+            )
+            raise SchemaError(f"Routing key {routing_key} must have at least 3 words!")
+        msg_category_symbol_value = routing_key_words[0]
+        type_name_lrh = routing_key_words[3]
+
         try:
-            routing_key_type = RoutingKeyType(routing_key_words[0])
+            msg_category_symbol = MessageCategorySymbol(msg_category_symbol_value)
         except ValueError:
             self._latest_on_message_diagnostic = (
-                OnReceiveMessageDiagnostic.TYPE_NAME_DECODING_PROBLEM
+                OnReceiveMessageDiagnostic.UNKNOWN_MESSAGE_CATEGORY_SYMBOL
             )
             raise SchemaError(
-                f"First  word of {routing_key} not a known RoutingKeyType!"
+                f"First  word of {routing_key} not a known MessageCategorySymbol!"
             )
-        if routing_key_type != RoutingKeyType.JSON_DIRECT_MESSAGE:
+        msg_category = utils.message_category_from_symbol(msg_category_symbol)
+        allowable_categories = [
+            MessageCategory.RabbitJsonDirect,
+            MessageCategory.RabbitJsonBroadcast,
+            MessageCategory.MqttJsonBroadcast,
+        ]
+        if msg_category not in allowable_categories:
             self._latest_on_message_diagnostic = (
                 OnReceiveMessageDiagnostic.UNHANDLED_ROUTING_KEY_TYPE
             )
             raise SchemaError(
-                f"Registry actors only use json type schema, not {routing_key_type} for {routing_key}"
+                f"Rabbit messages do not handle {msg_category_symbol.value}"
             )
-        try:
-            payload_as_dict = json.loads(payload)
-        except:
-            raise SchemaError(
-                f"json.loads failed to work for body of {routing_key} message!"
-            )
-        if "TypeName" not in payload_as_dict.keys():
-            raise SchemaError(
-                f"TypeName missing as a key in the json dictionary for {routing_key} message!"
-            )
-        type_name = payload_as_dict["TypeName"]
-        try:
-            property_format.check_is_lrd_alias_format(type_name)
-        except SchemaError:
+
+        if not property_format.is_lrh_alias_format(type_name_lrh):
             self._latest_on_message_diagnostic = (
                 OnReceiveMessageDiagnostic.TYPE_NAME_DECODING_PROBLEM
             )
             raise SchemaError(
-                f"TypeName {type_name} in {routing_key} message not lrd_alias_format!"
+                f"TypeName {type_name_lrh} in {routing_key} message not lrh_alias_format!"
             )
-        return str(type_name)
+        type_name = type_name_lrh.replace("-", ".")
+        return type_name
 
     def from_alias_from_routing_key(self, routing_key: str) -> str:
         """Returns the GNodeAlias in left-right-dot format. Raises a SchemaError
@@ -973,22 +1001,29 @@ class ActorBase(ABC):
         """
         routing_key_words = routing_key.split(".")
         try:
-            from_g_node_alias_lru = routing_key_words[1]
+            from_g_node_alias_lrh = routing_key_words[1]
         except:
-            raise SchemaError(f"{routing_key} must have at least two words!")
-        if not property_format.is_lru_alias_format(from_g_node_alias_lru):
+            raise SchemaError(f"{routing_key} must have at least three words!")
+
+        if not property_format.is_lrh_alias_format(from_g_node_alias_lrh):
             raise SchemaError(
-                f"GNodeAlias not is_lru_alias_format for routing key {routing_key}!"
+                f"GNodeAlias not is_lrh_alias_format for routing key {routing_key}!"
             )
-        from_g_node_alias = utils.underscore_to_dot(from_g_node_alias_lru)
+        from_g_node_alias = from_g_node_alias_lrh.replace("-", ".")
         return from_g_node_alias
 
-    def role_from_routing_key(self, routing_key: str) -> GNodeRole:
-        """Returns the GNodeRole. Raises a SchemaError
+    def from_role_from_routing_key(self, routing_key: str) -> GNodeRole:
+        """Returns the GNodeRole that the message came from. Raises a SchemaError
         if there is trouble getting this.
         Args:
-            routing_key (str): This is the basic_deliver.routing_key string
+            routing_key (str): basic_deliver.routing_key string
             in a rabbit message
+
+        Raises:
+            SchemaError: Error in message construction
+
+        Returns:
+            GNodeRole: GNodeRole of the actor that sent the message
         """
         routing_key_words = routing_key.split(".")
         try:

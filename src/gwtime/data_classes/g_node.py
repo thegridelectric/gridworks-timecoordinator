@@ -4,10 +4,10 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
-from gwatn.data_classes.gps_point import GpsPoint
-from gwatn.enums import GNodeRole
-from gwatn.enums import GNodeStatus
-from gwatn.errors import DcError
+from gwtime.data_classes import GpsPoint
+from gwtime.enums import GNodeRole
+from gwtime.enums import GNodeStatus
+from gwtime.errors import DcError
 
 
 LOG_FORMAT = (
