@@ -6,9 +6,12 @@ from typing import Any
 from typing import Optional
 from typing import no_type_check
 
-import gwatn.property_format as property_format
 import pendulum
-from gwatn.errors import SchemaError
+
+import gwtime.property_format as property_format
+from gwtime.enums import MessageCategory
+from gwtime.enums import MessageCategorySymbol
+from gwtime.errors import SchemaError
 
 
 DEFAULT_STEP_DURATION = 0.1
@@ -48,10 +51,8 @@ def dot_to_underscore(candidate: str) -> str:
     """
     try:
         property_format.check_is_lrd_alias_format(candidate)
-    except SchemaError:
-        raise SchemaError(
-            f"{candidate} words with dot as separator are not alphanumeric!"
-        )
+    except SchemaError as e:
+        raise SchemaError(f"{candidate} not LrdAliasFormat: {e}!")
 
     return candidate.replace(".", "_")
 
@@ -63,45 +64,29 @@ def underscore_to_dot(candidate: str) -> str:
     if property_format.is_lru_alias_format(candidate):
         return candidate.replace("_", ".")
     else:
-        raise SchemaError(
-            f"{candidate} words with underscore as separator are not alphanumeric!"
-        )
+        raise SchemaError(f"{candidate} is not LruAliasFormat!")
 
 
-def slot_start_s_from_market_slot_alias(market_slot_alias: str) -> Optional[int]:
-    if not property_format.is_market_slot_alias_lrd_format(market_slot_alias):
-        LOGGER.warning(
-            f"market slot alias {market_slot_alias} does not have market"
-            " slot alias lrd format!"
-        )
-        return None
-    x = market_slot_alias.split(".")
-    slot_start_utc_s = x[-1]
-    return int(slot_start_utc_s)
+def message_category_from_symbol(symbol: MessageCategorySymbol) -> MessageCategory:
+    category = MessageCategory.Unknown
+    if symbol == MessageCategorySymbol.rj:
+        category =  MessageCategory.RabbitJsonDirect
+    elif symbol == MessageCategorySymbol.rjb:
+        category =  MessageCategory.RabbitJsonBroadcast
+    elif symbol == MessageCategorySymbol.s:
+        category =  MessageCategory.RabbitGwSerial
+    elif symbol == MessageCategorySymbol.mq:
+        category =  MessageCategory.MqttJsonBroadcast
+    elif symbol == MessageCategorySymbol.post:
+        category =  MessageCategory.RestApiPost
+    elif symbol == MessageCategorySymbol.postack:
+        category =  MessageCategory.RestApiPostResponse
+    elif symbol == MessageCategorySymbol.get:
+        category =  MessageCategory.RestApiGet
+    return category
 
 
-def p_node_alias_from_market_alias(market_alias: str) -> Optional[str]:
-    if not property_format.is_market_alias_lrd_format(market_alias):
-        LOGGER.warning(
-            f"market alias {market_alias} does not have market alias " "lrd format!"
-        )
-        return None
-    x = market_alias.split(".")
-    p_node_alias = ".".join(x[1:])
-    return p_node_alias
-
-
-def market_alias_from_market_slot_alias(market_slot_alias: str) -> Optional[str]:
-    if not property_format.is_market_slot_alias_lrd_format(market_slot_alias):
-        LOGGER.warning(
-            f"market slot alias {market_slot_alias} does not have market"
-            " slot alias lrd format!"
-        )
-    x = market_slot_alias.split(".")
-    market_alias = ".".join(x[:-1])
-    return market_alias
-
-
+@no_type_check
 def responsive_sleep(
     obj: Any,
     seconds: float,

@@ -3,6 +3,7 @@ from gwtime.enums.g_node_role import GNodeRole
 from gwtime.enums.g_node_status import GNodeStatus
 from gwtime.enums.message_category import MessageCategory
 from gwtime.enums.message_category_symbol import MessageCategorySymbol
+from gwtime.enums.universe_type import UniverseType
 
 
 __all__ = [
@@ -10,4 +11,5 @@ __all__ = [
     "GNodeStatus",
     "MessageCategory",
     "MessageCategorySymbol",
+    "UniverseType",
 ]
