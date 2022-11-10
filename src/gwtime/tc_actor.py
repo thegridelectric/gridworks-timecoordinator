@@ -1,9 +1,11 @@
 """ AtnActorBase """
 import logging
+import time
 import traceback
-from abc import abstractmethod
+import uuid
 from typing import Optional
 from typing import no_type_check
+
 import pendulum
 
 from gwtime.actor_base import ActorBase
@@ -15,6 +17,7 @@ from gwtime.schemata import HeartbeatA_Maker
 from gwtime.schemata import Ready
 from gwtime.schemata import Ready_Maker
 from gwtime.schemata import SimTimestep
+from gwtime.schemata import SimTimestep_Maker
 
 
 LOG_FORMAT = (
@@ -26,7 +29,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
 
-class TcActorBase(ActorBase):
+class TcActor(ActorBase):
     def __init__(self, settings: Settings):
         super().__init__(settings=settings)
         self.latest_time_unix_s: Optional[int] = None
@@ -34,6 +37,20 @@ class TcActorBase(ActorBase):
     ########################
     # Sends
     ########################
+
+    def on_rabbit_ready(self):
+        LOGGER.info("in on_rabbit_ready")
+        d = pendulum.datetime(year=2020, month=1, day=1, hour=0)
+        t = d.int_timestamp
+        payload = SimTimestep_Maker(
+            from_g_node_alias=self.alias,
+            from_g_node_instance_id=self.settings.g_node_instance_id,
+            time_unix_s=t,
+            irl_time_unix_s=int(time.time()),
+            message_id=str(uuid.uuid4()),
+        ).tuple
+        LOGGER.info(f"About to send first timestep {payload}")
+        self.send_timestep(payload)
 
     def send_timestep(self, payload: SimTimestep) -> None:
         if type(payload) != SimTimestep:
@@ -48,7 +65,7 @@ class TcActorBase(ActorBase):
         self.send_message(
             payload=HeartbeatA_Maker().tuple,
             to_role=GNodeRole.Supervisor,
-            to_g_node_alias="dw1.super1",
+            to_g_node_alias=self.settings.my_super_alias,
         )
 
     def prepare_for_death(self) -> None:
@@ -58,7 +75,9 @@ class TcActorBase(ActorBase):
     # Receives
     ########################
 
-    def route_message(self, from_alias: str, from_role: GNodeRole, payload: HeartbeatA) -> None:
+    def route_message(
+        self, from_alias: str, from_role: GNodeRole, payload: HeartbeatA
+    ) -> None:
         if payload.TypeName == Ready_Maker.type_name:
             try:
                 self.g_node_ready_received(payload)
@@ -69,9 +88,9 @@ class TcActorBase(ActorBase):
             LOGGER.info(f"Does not process TypeName {payload.TypeName}")
             return
 
-
-    @abstractmethod
+    # @abstractmethod
     def g_node_ready_received(self, payload: Ready) -> None:
+        LOGGER.info("Received ready from actor")
         raise NotImplementedError
 
     # @property

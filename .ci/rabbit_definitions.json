@@ -116,7 +116,7 @@
   ],
   "queues": [
     {
-      "name": "s3_ear_q",
+      "name": "dummy_ear_q",
       "vhost": "dw1__1",
       "durable": true,
       "auto_delete": false,
@@ -135,7 +135,7 @@
     {
       "source": "ear_tx",
       "vhost": "dw1__1",
-      "destination": "dummy_ear_queue",
+      "destination": "dummy_ear_q",
       "destination_type": "queue",
       "routing_key": "#",
       "arguments": {}

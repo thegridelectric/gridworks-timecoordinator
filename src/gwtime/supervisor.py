@@ -1,15 +1,18 @@
 """ AtnActorBase """
+import functools
 import logging
 import traceback
-from abc import abstractmethod
 from typing import Any
 from typing import Optional
+from typing import no_type_check
 
 import pendulum
 
 from gwtime.actor_base import ActorBase
 from gwtime.config import SupervisorSettings
 from gwtime.enums import GNodeRole
+from gwtime.enums import MessageCategorySymbol
+from gwtime.enums import UniverseType
 from gwtime.schemata import HeartbeatA
 from gwtime.schemata import HeartbeatA_Maker
 
@@ -24,12 +27,23 @@ LOGGER.setLevel(logging.DEBUG)
 
 class Supervisor(ActorBase):
     def __init__(self, settings: SupervisorSettings):
-        super().__init__(settings=settings) # type: ignore
+        super().__init__(settings=settings)  # type: ignore
 
-        LOGGER.debug("debug")
-        LOGGER.info("info")
-        LOGGER.warning("warning")
         self.latest_time_unix_s: Optional[int] = None
+
+    def additional_rabbit_stuff_after_rabbit_base_setup_is_done(self):
+        rjb = MessageCategorySymbol.rjb.value
+        tc_alias_lrh = self.settings.my_time_coordinator_alias.replace(".", "-")
+        binding = f"{rjb}.{tc_alias_lrh}.timecoordinator.sim-timestep"
+
+        cb = functools.partial(self.on_timecoordinator_bindok, binding=binding)
+        self._consume_channel.queue_bind(
+            self.queue_name, "timecoordinatormic_tx", routing_key=binding, callback=cb
+        )
+
+    @no_type_check
+    def on_timecoordinator_bindok(self, _unused_frame, binding) -> None:
+        LOGGER.info(f"Queue {self.queue_name} bound with {binding}")
 
     ########################
     # Sends

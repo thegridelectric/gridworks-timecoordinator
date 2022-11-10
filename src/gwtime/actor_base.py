@@ -23,6 +23,7 @@ from gwtime.config import Settings
 from gwtime.enums import GNodeRole
 from gwtime.enums import MessageCategory
 from gwtime.enums import MessageCategorySymbol
+from gwtime.enums import UniverseType
 from gwtime.errors import SchemaError
 from gwtime.schemata import HeartbeatA
 from gwtime.schemata import SimTimestep
@@ -97,6 +98,7 @@ class ActorBase(ABC):
         self.alias: str = settings.g_node_alias
         self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
         self.rabbit_role: RabbitRole = RabbitRolebyRole[self.g_node_role]
+        self.universe_type: UniverseType = UniverseType(settings.universe_type_value)
         self.actor_main_stopped: bool = False
 
         adder = "-F" + str(uuid.uuid4()).split("-")[0][0:3]
@@ -293,10 +295,6 @@ class ActorBase(ABC):
                 correlation_id=correlation_id,
             )
         elif message_category is MessageCategory.RabbitJsonBroadcast:
-            if not property_format.is_lrd_alias_format(radio_channel):
-                raise Exception(
-                    f"radio_channel must have LrdAliasFormat. Got {radio_channel}"
-                )
             routing_key = self.broadcast_routing_key(
                 payload=payload, radio_channel=radio_channel
             )
@@ -349,7 +347,7 @@ class ActorBase(ABC):
     # Core Rabbit infrastructure
     ########################
 
-    def on_rabbit_infrastructure_ready(self) -> None:
+    def on_rabbit_ready(self) -> None:
         pass
 
     def flush_consumer(self) -> None:
@@ -786,7 +784,7 @@ class ActorBase(ABC):
         """
         LOGGER.info("Publish channel opened")
         self._publish_channel = channel
-        self.on_rabbit_infrastructure_ready()
+        self.on_rabbit_ready()
         self.add_on_publish_channel_close_callback()
 
     def add_on_publish_channel_close_callback(self) -> None:
@@ -904,12 +902,17 @@ class ActorBase(ABC):
         self, payload: HeartbeatA, radio_channel: Optional[str]
     ) -> str:
         msg_type = MessageCategorySymbol.rjb.value
-        from_lrh_alias = self.alias.replace(".", "-")
+        from_alias_lrh = self.alias.replace(".", "-")
         from_role = self.rabbit_role.value
+        type_name_lrh = payload.TypeName.replace(".", "-")
         if radio_channel is None:
-            return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}"
+            return f"{msg_type}.{from_alias_lrh}.{from_role}.{type_name_lrh}"
         else:
-            return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}.{radio_channel}"
+            if not property_format.is_lrd_alias_format(radio_channel):
+                raise Exception(
+                    f"radio_channel must have LrdAliasFormat. Got {radio_channel}"
+                )
+            return f"{msg_type}.{from_alias_lrh}.{from_role}.{payload.TypeName}.{radio_channel}"
 
     def direct_routing_key(
         self, to_role: GNodeRole, payload: HeartbeatA, to_g_node_alias: str
