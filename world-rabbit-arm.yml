@@ -18,4 +18,5 @@ services:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/tmp/rabbit_definitions.json"
       - RABBITMQ_PLUGINS=rabbitmq_management,rabbitmq_stomp,rabbitmq_web_stomp,rabbitmq_mqtt
     volumes:
-      - ./for_docker/dev_rabbitmq.conf:/opt/bitnami/rabbitmq/etc/rabbitmq/rabbitmq.conf:ro
+      - ./for_docker/dev_rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+      - ./for_docker/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
