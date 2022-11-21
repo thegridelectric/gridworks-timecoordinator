@@ -1,0 +1,30 @@
+ARG REMOTE_BASE=python:3.10-slim-buster
+####################################################################################################
+# docker-base - meant to be re-run only rarely
+####################################################################################################
+
+FROM $REMOTE_BASE AS image-base
+
+RUN apt-get update
+ENV PYTHONUNBUFFERED 1
+
+####################################################################################################
+# app-compiler-image
+####################################################################################################
+
+FROM image-base AS app-compiler-image
+
+# Update os stuff
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential gcc libpq-dev postgresql postgresql-contrib curl
+
+WORKDIR /app
+
+# Install Poetry
+RUN curl -sSL  https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create false
+
+COPY pyproject.toml /poetry.lock* /app/
+
+RUN poetry install --no-root --no-dev

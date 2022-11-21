@@ -96,12 +96,9 @@ class TcActor(ActorBase):
             else:
                 if self._time > ts:
                     ts = self._time
-                    LOGGER.info("set ts to self._time")
                     self.tickles = 0
                 if self.on_time:
                     elapsed = time.time() - (self.timestep.IrlTimeUnixMs / 1000)
-                    LOGGER.info(f"Elapsed time: {elapsed}")
-                    LOGGER.info(f"elapsed > base_sleep: {elapsed > base_sleep}")
                     if elapsed > base_sleep:
                         self.on_time = False
                         self.tickles = 1
@@ -113,9 +110,9 @@ class TcActor(ActorBase):
                     waiting_s = 2 ** (self.tickles - 1)
                     time.sleep(waiting_s)
                     elapsed = time.time() - (self.timestep.IrlTimeUnixMs / 1000)
-                    LOGGER.info(
-                        f"Tickle {self.tickles}, elaped time {round(elapsed,2)}"
-                    )
+                    missing = list(set(self.my_actors) - set(self.ready))
+                    LOGGER.info(f"Tickle {self.tickles}, missing {missing}")
+
                     self.send_time()
                     if self.tickles >= 5:
                         self.paused = True
@@ -166,12 +163,12 @@ class TcActor(ActorBase):
         self.ready = []
 
     def ready_received(self, payload: Ready) -> None:
-        LOGGER.info(f"Received ready from {payload.FromGNodeAlias}")
         if payload.FromGNodeAlias in self.my_actors:
             if payload.FromGNodeAlias not in self.ready:
                 self.ready.append(payload.FromGNodeAlias)
-                LOGGER.info(f"Ready: {self.ready}")
             if set(self.ready) == set(self.my_actors):
+                elapsed = time.time() - (self.timestep.IrlTimeUnixMs / 1000)
+                LOGGER.info(f"Timestep took {round(elapsed,2)}s")
                 self.step()
                 self.send_time()
 

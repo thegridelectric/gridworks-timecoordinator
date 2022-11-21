@@ -174,8 +174,8 @@ class ActorBase(ABC):
         :param bytes body: The message body
         """
         self.latest_routing_key = basic_deliver.routing_key
-        LOGGER.warning(
-            f"In actor_base on_message. Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
+        LOGGER.debug(
+            f"Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
         )
         self.acknowledge_message(basic_deliver.delivery_tag)
         try:
@@ -321,7 +321,7 @@ class ActorBase(ABC):
                 body=payload.as_type(),
                 properties=properties,
             )
-            LOGGER.info(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
+            LOGGER.debug(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
             return OnSendMessageDiagnostic.MESSAGE_SENT
 
         except BaseException as err:
