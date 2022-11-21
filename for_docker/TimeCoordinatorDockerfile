@@ -1,5 +1,5 @@
 
-ARG BASE=jessmillar/mm-base:latest
+ARG BASE=jessmillar/tc-base:latest
 
 FROM $BASE AS app-base
 
