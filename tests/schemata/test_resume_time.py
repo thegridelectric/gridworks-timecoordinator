@@ -1,22 +1,20 @@
-"""Tests sim.timestep type, version 000"""
+"""Tests resume.time type, version 000"""
 import json
 
 import pytest
 from pydantic import ValidationError
 
 from gwtime.errors import SchemaError
-from gwtime.schemata import SimTimestep_Maker as Maker
+from gwtime.schemata import ResumeTime_Maker as Maker
 
 
-def test_sim_timestep_generated() -> None:
+def test_resume_time_generated() -> None:
 
     d = {
-        "FromGNodeAlias": "d1.tc",
-        "FromGNodeInstanceId": "bdb20ce2-332f-4d3e-b848-0c350be2ea67",
-        "TimeUnixS": 1667852537,
-        "IrlTimeUnixMs": 1667852537000,
-        "MessageId": "7bc73995-c71b-45b4-a608-761fdc1c28eb",
-        "TypeName": "sim.timestep",
+        "FromGNodeAlias": "d1",
+        "FromGNodeInstanceId": "2858afb7-4ffd-4a10-b3b5-c52ad1f61697",
+        "ToGNodeAlias": "d1.time",
+        "TypeName": "resume.time",
         "Version": "000",
     }
 
@@ -37,9 +35,7 @@ def test_sim_timestep_generated() -> None:
     t = Maker(
         from_g_node_alias=gtuple.FromGNodeAlias,
         from_g_node_instance_id=gtuple.FromGNodeInstanceId,
-        time_unix_s=gtuple.TimeUnixS,
-        irl_time_unix_ms=gtuple.IrlTimeUnixMs,
-        message_id=gtuple.MessageId,
+        to_g_node_alias=gtuple.ToGNodeAlias,
     ).tuple
     assert t == gtuple
 
@@ -63,31 +59,13 @@ def test_sim_timestep_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["TimeUnixS"]
-    with pytest.raises(SchemaError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d)
-    del d2["IrlTimeUnixMs"]
-    with pytest.raises(SchemaError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d)
-    del d2["MessageId"]
+    del d2["ToGNodeAlias"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
     ######################################
     # Behavior on incorrect types
     ######################################
-
-    d2 = dict(d, TimeUnixS="1667852537.1")
-    with pytest.raises(ValidationError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d, IrlTimeUnixMs="1667852537000.1")
-    with pytest.raises(ValidationError):
-        Maker.dict_to_tuple(d2)
 
     ######################################
     # SchemaError raised if TypeName is incorrect
@@ -109,15 +87,7 @@ def test_sim_timestep_generated() -> None:
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 
-    d2 = dict(d, TimeUnixS=32503683600)
-    with pytest.raises(ValidationError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d, IrlTimeUnixMs=1656245000)
-    with pytest.raises(ValidationError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d, MessageId="d4be12d5-33ba-4f1f-b9e5")
+    d2 = dict(d, ToGNodeAlias="a.b-h")
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 

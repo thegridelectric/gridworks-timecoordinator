@@ -1,0 +1,14 @@
+
+ARG BASE=jessmillar/tc-base:latest
+
+FROM $BASE AS app-base
+
+
+WORKDIR /app
+
+COPY ./src /app/src
+COPY ./for_docker/docker.env /app/.env
+COPY README.md /app/README.md
+COPY demo.py /app/demo.py
+RUN pip install -e /app
+CMD ["python", "demo.py"]

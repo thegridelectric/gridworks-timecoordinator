@@ -6,7 +6,15 @@
 [pre-commit]: https://github.com/pre-commit/pre-commit
 [black]: https://github.com/psf/black
 
-## Local Demo setup
+The TimeCoordinator is a GNode Actor in a larger Transactive Energy Management (TEM) system. It is responsible for managing time in simulations of transactive devices interacting with the electric grid. It is one of the docker instances in the [GNodeFactory demo](https://github.com/thegridelectric/g-node-factory).
+
+## Sketch of its role
+![alt_text](docs/img/tc-graphic-1.png)
+
+![alt_text](docs/img/tc-graphic-2.png)
+
+![alt_text](docs/img/tc-graphic-3.png)
+## Development
 
 1. Set up python envirnment
 
@@ -40,11 +48,6 @@
      smqPublic
      ```
 
-5. Run demo:
-
-   ```
-   python demo.py
-   ```
 
 ## Contributing
 

@@ -1,4 +1,4 @@
-"""Type sim.timestep, version 000"""
+"""Type pause.time, version 000"""
 import json
 from typing import Any
 from typing import Dict
@@ -11,13 +11,11 @@ from gwtime.errors import SchemaError
 from gwtime.property_format import predicate_validator
 
 
-class SimTimestep(BaseModel):
+class PauseTime(BaseModel):
     FromGNodeAlias: str  #
     FromGNodeInstanceId: str  #
-    TimeUnixS: int  #
-    IrlTimeUnixMs: int  #
-    MessageId: str  #
-    TypeName: Literal["sim.timestep"] = "sim.timestep"
+    ToGNodeAlias: str  #
+    TypeName: Literal["pause.time"] = "pause.time"
     Version: str = "000"
 
     _validator_from_g_node_alias = predicate_validator(
@@ -28,16 +26,8 @@ class SimTimestep(BaseModel):
         "FromGNodeInstanceId", property_format.is_uuid_canonical_textual
     )
 
-    _validator_time_unix_s = predicate_validator(
-        "TimeUnixS", property_format.is_reasonable_unix_time_s
-    )
-
-    _validator_irl_time_unix_ms = predicate_validator(
-        "IrlTimeUnixMs", property_format.is_reasonable_unix_time_ms
-    )
-
-    _validator_message_id = predicate_validator(
-        "MessageId", property_format.is_uuid_canonical_textual
+    _validator_to_g_node_alias = predicate_validator(
+        "ToGNodeAlias", property_format.is_lrd_alias_format
     )
 
     def as_dict(self) -> Dict[str, Any]:
@@ -48,34 +38,27 @@ class SimTimestep(BaseModel):
         return json.dumps(self.as_dict())
 
 
-class SimTimestep_Maker:
-    type_name = "sim.timestep"
+class PauseTime_Maker:
+    type_name = "pause.time"
     version = "000"
 
     def __init__(
-        self,
-        from_g_node_alias: str,
-        from_g_node_instance_id: str,
-        time_unix_s: int,
-        irl_time_unix_ms: int,
-        message_id: str,
+        self, from_g_node_alias: str, from_g_node_instance_id: str, to_g_node_alias: str
     ):
 
-        self.tuple = SimTimestep(
+        self.tuple = PauseTime(
             FromGNodeAlias=from_g_node_alias,
             FromGNodeInstanceId=from_g_node_instance_id,
-            TimeUnixS=time_unix_s,
-            IrlTimeUnixMs=irl_time_unix_ms,
-            MessageId=message_id,
+            ToGNodeAlias=to_g_node_alias,
             #
         )
 
     @classmethod
-    def tuple_to_type(cls, tuple: SimTimestep) -> str:
+    def tuple_to_type(cls, tuple: PauseTime) -> str:
         return tuple.as_type()
 
     @classmethod
-    def type_to_tuple(cls, t: str) -> SimTimestep:
+    def type_to_tuple(cls, t: str) -> PauseTime:
         try:
             d = json.loads(t)
         except TypeError:
@@ -85,27 +68,21 @@ class SimTimestep_Maker:
         return cls.dict_to_tuple(d)
 
     @classmethod
-    def dict_to_tuple(cls, d: dict[str, Any]) -> SimTimestep:
+    def dict_to_tuple(cls, d: dict[str, Any]) -> PauseTime:
         d2 = dict(d)
         if "FromGNodeAlias" not in d2.keys():
             raise SchemaError(f"dict {d2} missing FromGNodeAlias")
         if "FromGNodeInstanceId" not in d2.keys():
             raise SchemaError(f"dict {d2} missing FromGNodeInstanceId")
-        if "TimeUnixS" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing TimeUnixS")
-        if "IrlTimeUnixMs" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing IrlTimeUnixMs")
-        if "MessageId" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing MessageId")
+        if "ToGNodeAlias" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing ToGNodeAlias")
         if "TypeName" not in d2.keys():
             raise SchemaError(f"dict {d2} missing TypeName")
 
-        return SimTimestep(
+        return PauseTime(
             FromGNodeAlias=d2["FromGNodeAlias"],
             FromGNodeInstanceId=d2["FromGNodeInstanceId"],
-            TimeUnixS=d2["TimeUnixS"],
-            IrlTimeUnixMs=d2["IrlTimeUnixMs"],
-            MessageId=d2["MessageId"],
+            ToGNodeAlias=d2["ToGNodeAlias"],
             TypeName=d2["TypeName"],
             Version="000",
         )

@@ -4,7 +4,9 @@ from typing import List
 from typing import no_type_check
 
 from gwtime.schemata import HeartbeatA_Maker
+from gwtime.schemata import PauseTime_Maker
 from gwtime.schemata import Ready_Maker
+from gwtime.schemata import ResumeTime_Maker
 from gwtime.schemata import SimTimestep_Maker
 
 
@@ -15,7 +17,9 @@ TypeMakerByName: Dict[str, HeartbeatA_Maker] = {}
 def type_makers() -> List[HeartbeatA_Maker]:
     return [
         HeartbeatA_Maker,
+        PauseTime_Maker,
         Ready_Maker,
+        ResumeTime_Maker,
         SimTimestep_Maker,
     ]
 
@@ -32,7 +36,9 @@ def version_by_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "heartbeat.a": "000",
+        "pause.time": "000",
         "ready": "000",
+        "resume.time": "000",
         "sim.timestep": "000",
     }
 
@@ -47,7 +53,9 @@ def status_by_versioned_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "heartbeat.a.000": "Pending",
+        "pause.time.000": "Pending",
         "ready.000": "Pending",
+        "resume.time.000": "Pending",
         "sim.timestep.000": "Pending",
     }
 

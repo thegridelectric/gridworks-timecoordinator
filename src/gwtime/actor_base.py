@@ -94,7 +94,7 @@ class ActorBase(ABC):
     ):
         self.latest_routing_key: Optional[str] = None
         self.settings: Settings = settings
-        self.agent_shutting_down_part_one: bool = False
+        self.shutting_down: bool = False
         self.alias: str = settings.g_node_alias
         self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
         self.rabbit_role: RabbitRole = RabbitRolebyRole[self.g_node_role]
@@ -141,7 +141,8 @@ class ActorBase(ABC):
         self._stopped = False
 
     def stop(self) -> None:
-        self.commence_shutting_down()
+        self.shutting_down = True
+        self.prepare_for_death()
         while self.actor_main_stopped is False:
             time.sleep(self.SHUTDOWN_INTERVAL)
         self.stop_publisher()
@@ -174,8 +175,8 @@ class ActorBase(ABC):
         :param bytes body: The message body
         """
         self.latest_routing_key = basic_deliver.routing_key
-        LOGGER.warning(
-            f"In actor_base on_message. Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
+        LOGGER.debug(
+            f"Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
         )
         self.acknowledge_message(basic_deliver.delivery_tag)
         try:
@@ -321,7 +322,7 @@ class ActorBase(ABC):
                 body=payload.as_type(),
                 properties=properties,
             )
-            LOGGER.info(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
+            LOGGER.debug(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
             return OnSendMessageDiagnostic.MESSAGE_SENT
 
         except BaseException as err:
@@ -912,7 +913,7 @@ class ActorBase(ABC):
                 raise Exception(
                     f"radio_channel must have LrdAliasFormat. Got {radio_channel}"
                 )
-            return f"{msg_type}.{from_alias_lrh}.{from_role}.{payload.TypeName}.{radio_channel}"
+            return f"{msg_type}.{from_alias_lrh}.{from_role}.{type_name_lrh}.{radio_channel}"
 
     def direct_routing_key(
         self, to_role: GNodeRole, payload: HeartbeatA, to_g_node_alias: str
@@ -1053,10 +1054,6 @@ class ActorBase(ABC):
 
     def __repr__(self) -> str:
         return f"{self.alias}"
-
-    def commence_shutting_down(self) -> None:
-        self.agent_shutting_down_part_one = True
-        self.prepare_for_death()
 
     ###################################
     # Time related
