@@ -9,6 +9,6 @@ WORKDIR /app
 COPY ./src /app/src
 COPY ./for_docker/docker.env /app/.env
 COPY README.md /app/README.md
-COPY ./input_data/dev_prices.csv /app/input_data/dev_prices.csv
+COPY demo.py /app/demo.py
 RUN pip install -e /app
-CMD ["uvicorn", "gwmm.rest_api:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "demo.py"]

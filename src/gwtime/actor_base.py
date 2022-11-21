@@ -94,7 +94,7 @@ class ActorBase(ABC):
     ):
         self.latest_routing_key: Optional[str] = None
         self.settings: Settings = settings
-        self.agent_shutting_down_part_one: bool = False
+        self.shutting_down: bool = False
         self.alias: str = settings.g_node_alias
         self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
         self.rabbit_role: RabbitRole = RabbitRolebyRole[self.g_node_role]
@@ -141,7 +141,8 @@ class ActorBase(ABC):
         self._stopped = False
 
     def stop(self) -> None:
-        self.commence_shutting_down()
+        self.shutting_down = True
+        self.prepare_for_death()
         while self.actor_main_stopped is False:
             time.sleep(self.SHUTDOWN_INTERVAL)
         self.stop_publisher()
@@ -1053,10 +1054,6 @@ class ActorBase(ABC):
 
     def __repr__(self) -> str:
         return f"{self.alias}"
-
-    def commence_shutting_down(self) -> None:
-        self.agent_shutting_down_part_one = True
-        self.prepare_for_death()
 
     ###################################
     # Time related

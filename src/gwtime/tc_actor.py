@@ -17,8 +17,12 @@ from gwtime.enums import GNodeRole
 from gwtime.enums import MessageCategory
 from gwtime.schemata import HeartbeatA
 from gwtime.schemata import HeartbeatA_Maker
+from gwtime.schemata import PauseTime
+from gwtime.schemata import PauseTime_Maker
 from gwtime.schemata import Ready
 from gwtime.schemata import Ready_Maker
+from gwtime.schemata import ResumeTime
+from gwtime.schemata import ResumeTime_Maker
 from gwtime.schemata import SimTimestep
 from gwtime.schemata import SimTimestep_Maker
 
@@ -45,6 +49,8 @@ class TcActor(ActorBase):
             irl_time_unix_ms=int(time.time() * 1000),
             message_id=str(uuid.uuid4()),
         ).tuple
+        end = pendulum.datetime(year=2020, month=1, day=8, hour=5)
+        self.end_time = end.int_timestamp
         self._time: int = self.settings.initial_time_unix_s
         self.my_actors: List[str] = [
             "d1.isone.ver.keene.holly",
@@ -65,7 +71,6 @@ class TcActor(ActorBase):
     def on_rabbit_ready(self) -> None:
         LOGGER.info("in on_rabbit_ready")
         self.tickle_thread.start()
-        self.resume()
 
     def resume(self) -> None:
         self.timestep.IrlTimeUnixMs = int(time.time() * 1000)
@@ -77,6 +82,8 @@ class TcActor(ActorBase):
         self.paused = True
 
     def send_time(self) -> None:
+        if self._time >= self.end_time:
+            self.stop()
         LOGGER.info(f"{self.time_utc_str()}")
         if self.paused:
             LOGGER.info(f"not sending time. Paused")
@@ -90,7 +97,7 @@ class TcActor(ActorBase):
         LOGGER.info("Started tickle thread")
         base_sleep = 0.5
         ts = self._time
-        while self.agent_shutting_down_part_one is False:
+        while self.shutting_down is False:
             if self.paused:
                 time.sleep(2)
             else:
@@ -143,6 +150,18 @@ class TcActor(ActorBase):
             except:
                 LOGGER.warning("Error in g_node_ready_received")
                 LOGGER.warning(traceback.format_exc(True))
+        elif payload.TypeName == PauseTime_Maker.type_name:
+            try:
+                self.pause_time_received(payload)
+            except:
+                LOGGER.warning("Error in pause_time_received")
+                LOGGER.warning(traceback.format_exc(True))
+        elif payload.TypeName == ResumeTime_Maker.type_name:
+            try:
+                self.resume_time_received(payload)
+            except:
+                LOGGER.warning("Error in resume_time_received")
+                LOGGER.warning(traceback.format_exc(True))
         else:
             LOGGER.info(f"Does not process TypeName {payload.TypeName}")
             return
@@ -171,6 +190,14 @@ class TcActor(ActorBase):
                 LOGGER.info(f"Timestep took {round(elapsed,2)}s")
                 self.step()
                 self.send_time()
+
+    def pause_time_received(self, payload: PauseTime):
+        LOGGER.info(f"Received Pause message")
+        self.pause()
+
+    def resume_time_received(self, payload: ResumeTime):
+        LOGGER.info(f"Received Resume message")
+        self.resume()
 
     def time_utc_str(self) -> str:
         return pendulum.from_timestamp(self._time).strftime("%m/%d/%Y, %H:%M")
