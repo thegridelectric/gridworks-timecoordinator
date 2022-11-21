@@ -8,7 +8,7 @@ services:
     networks:
       - "dev"
     container_name: tc
-    image: "jessmillar/timecoordinator:latest"
+    image: "jessmillar/timecoordinator:chaos__74a41b4__20221121"
   rabbit:
     networks:
       - "dev"

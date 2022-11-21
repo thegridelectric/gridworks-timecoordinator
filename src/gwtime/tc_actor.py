@@ -49,8 +49,7 @@ class TcActor(ActorBase):
             irl_time_unix_ms=int(time.time() * 1000),
             message_id=str(uuid.uuid4()),
         ).tuple
-        end = pendulum.datetime(year=2020, month=1, day=8, hour=5)
-        self.end_time = end.int_timestamp
+
         self._time: int = self.settings.initial_time_unix_s
         self.my_actors: List[str] = [
             "d1.isone.ver.keene.holly",
@@ -82,8 +81,6 @@ class TcActor(ActorBase):
         self.paused = True
 
     def send_time(self) -> None:
-        if self._time >= self.end_time:
-            self.stop()
         LOGGER.info(f"{self.time_utc_str()}")
         if self.paused:
             LOGGER.info(f"not sending time. Paused")
