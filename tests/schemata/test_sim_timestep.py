@@ -14,7 +14,7 @@ def test_sim_timestep_generated() -> None:
         "FromGNodeAlias": "d1.tc",
         "FromGNodeInstanceId": "bdb20ce2-332f-4d3e-b848-0c350be2ea67",
         "TimeUnixS": 1667852537,
-        "IrlTimeUnixS": 1667852537,
+        "IrlTimeUnixMs": 1667852537000,
         "MessageId": "7bc73995-c71b-45b4-a608-761fdc1c28eb",
         "TypeName": "sim.timestep",
         "Version": "000",
@@ -38,7 +38,7 @@ def test_sim_timestep_generated() -> None:
         from_g_node_alias=gtuple.FromGNodeAlias,
         from_g_node_instance_id=gtuple.FromGNodeInstanceId,
         time_unix_s=gtuple.TimeUnixS,
-        irl_time_unix_s=gtuple.IrlTimeUnixS,
+        irl_time_unix_ms=gtuple.IrlTimeUnixMs,
         message_id=gtuple.MessageId,
     ).tuple
     assert t == gtuple
@@ -68,7 +68,7 @@ def test_sim_timestep_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["IrlTimeUnixS"]
+    del d2["IrlTimeUnixMs"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
@@ -85,7 +85,7 @@ def test_sim_timestep_generated() -> None:
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 
-    d2 = dict(d, IrlTimeUnixS="1667852537.1")
+    d2 = dict(d, IrlTimeUnixMs="1667852537000.1")
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 
@@ -113,7 +113,7 @@ def test_sim_timestep_generated() -> None:
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 
-    d2 = dict(d, IrlTimeUnixS=32503683600)
+    d2 = dict(d, IrlTimeUnixMs=1656245000)
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 

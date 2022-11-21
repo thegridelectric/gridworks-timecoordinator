@@ -117,7 +117,7 @@ class TimeCoordinatorStubRecorder(ActorBase):
         return self.send_message(
             payload=HeartbeatA_Maker().tuple,
             to_role=GNodeRole.Supervisor,
-            to_g_node_alias="dw1.super1",
+            to_g_node_alias="d1.super1",
         )
 
     def prepare_for_death(self):

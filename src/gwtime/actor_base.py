@@ -912,7 +912,7 @@ class ActorBase(ABC):
                 raise Exception(
                     f"radio_channel must have LrdAliasFormat. Got {radio_channel}"
                 )
-            return f"{msg_type}.{from_alias_lrh}.{from_role}.{payload.TypeName}.{radio_channel}"
+            return f"{msg_type}.{from_alias_lrh}.{from_role}.{type_name_lrh}.{radio_channel}"
 
     def direct_routing_key(
         self, to_role: GNodeRole, payload: HeartbeatA, to_g_node_alias: str

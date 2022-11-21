@@ -11,7 +11,7 @@ from gwtime.schemata import Ready_Maker as Maker
 def test_ready_generated() -> None:
 
     d = {
-        "FromGNodeAlias": "dw1.tc",
+        "FromGNodeAlias": "d1.time",
         "FromGNodeInstanceId": "eac00c51-d944-4829-aaca-847bca1b8438",
         "TypeName": "ready",
         "Version": "000",

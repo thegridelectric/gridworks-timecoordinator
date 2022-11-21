@@ -59,7 +59,7 @@ def check_is_bit(candidate: int) -> None:
 
 def is_lrd_alias_format(candidate: str) -> bool:
     """Lowercase AlphanumericStrings separated by dots (i.e. periods), with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter
@@ -88,14 +88,14 @@ def is_lrd_alias_format(candidate: str) -> bool:
 
 def check_is_lrd_alias_format(candidate: str) -> None:
     """Lowercase AlphanumericStrings separated by dots (i.e. periods), with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter
 
 
     Raises:
-        ValueError: if candidate is not of lrd format (e.g. dw1.iso.me.apple)
+        ValueError: if candidate is not of lrd format (e.g. d1.iso.me.apple)
     """
     try:
         x = candidate.split(".")
@@ -117,7 +117,7 @@ def check_is_lrd_alias_format(candidate: str) -> None:
 
 def is_lru_alias_format(candidate: str) -> bool:
     """AlphanumericStrings separated by underscores, with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter"""
@@ -139,7 +139,7 @@ def is_lru_alias_format(candidate: str) -> bool:
 
 def is_lrh_alias_format(candidate: str) -> bool:
     """AlphanumericStrings separated by hyphens, with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter"""
