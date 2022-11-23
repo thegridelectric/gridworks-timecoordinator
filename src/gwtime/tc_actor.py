@@ -34,7 +34,7 @@ LOG_FORMAT = (
 LOGGER = logging.getLogger(__name__)
 
 LOGGER.setLevel(logging.INFO)
-
+BASE_SLEEP = 2
 
 class TcActor(ActorBase):
     def __init__(
@@ -95,7 +95,7 @@ class TcActor(ActorBase):
 
     def tickle_time(self) -> None:
         LOGGER.info("Started tickle thread")
-        base_sleep = 0.5
+        base_sleep = BASE_SLEEP
         ts = self._time
         while self.shutting_down is False:
             if self.paused:
