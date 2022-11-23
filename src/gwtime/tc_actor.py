@@ -72,7 +72,7 @@ class TcActor(ActorBase):
         self.tickle_thread.start()
 
     def resume(self) -> None:
-        self.timestep.IrlTimeUnixMs = int(time.time() * 1000)
+        self.timestep.TimestepCreatedMs = int(time.time() * 1000)
         self.tickles = 0
         self.paused = False
         self.send_time()
@@ -102,7 +102,7 @@ class TcActor(ActorBase):
                     ts = self._time
                     self.tickles = 0
                 if self.on_time:
-                    elapsed = time.time() - (self.timestep.IrlTimeUnixMs / 1000)
+                    elapsed = time.time() - (self.timestep.TimestepCreatedMs / 1000)
                     if elapsed > base_sleep:
                         self.on_time = False
                         self.tickles = 1
@@ -113,7 +113,7 @@ class TcActor(ActorBase):
                     self.tickles += 1
                     waiting_s = 2 ** (self.tickles - 1)
                     time.sleep(waiting_s)
-                    elapsed = time.time() - (self.timestep.IrlTimeUnixMs / 1000)
+                    elapsed = time.time() - (self.timestep.TimestepCreatedMs / 1000)
                     missing = list(set(self.my_actors) - set(self.ready))
                     LOGGER.info(f"Tickle {self.tickles}, missing {missing}")
 
@@ -183,7 +183,7 @@ class TcActor(ActorBase):
             if payload.FromGNodeAlias not in self.ready:
                 self.ready.append(payload.FromGNodeAlias)
             if set(self.ready) == set(self.my_actors):
-                elapsed = time.time() - (self.timestep.IrlTimeUnixMs / 1000)
+                elapsed = time.time() - (self.timestep.TimestepCreatedMs / 1000)
                 LOGGER.info(f"Timestep took {round(elapsed,2)}s")
                 self.step()
                 self.send_time()
