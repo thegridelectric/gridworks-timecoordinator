@@ -15,7 +15,7 @@ class SimTimestep(BaseModel):
     FromGNodeAlias: str  #
     FromGNodeInstanceId: str  #
     TimeUnixS: int  #
-    IrlTimeUnixMs: int  #
+    TimestepCreatedMs: int  #
     MessageId: str  #
     TypeName: Literal["sim.timestep"] = "sim.timestep"
     Version: str = "000"
@@ -32,8 +32,8 @@ class SimTimestep(BaseModel):
         "TimeUnixS", property_format.is_reasonable_unix_time_s
     )
 
-    _validator_irl_time_unix_ms = predicate_validator(
-        "IrlTimeUnixMs", property_format.is_reasonable_unix_time_ms
+    _validator_timestep_created_ms = predicate_validator(
+        "TimestepCreatedMs", property_format.is_reasonable_unix_time_ms
     )
 
     _validator_message_id = predicate_validator(
@@ -57,7 +57,7 @@ class SimTimestep_Maker:
         from_g_node_alias: str,
         from_g_node_instance_id: str,
         time_unix_s: int,
-        irl_time_unix_ms: int,
+        timestep_created_ms: int,
         message_id: str,
     ):
 
@@ -65,7 +65,7 @@ class SimTimestep_Maker:
             FromGNodeAlias=from_g_node_alias,
             FromGNodeInstanceId=from_g_node_instance_id,
             TimeUnixS=time_unix_s,
-            IrlTimeUnixMs=irl_time_unix_ms,
+            TimestepCreatedMs=timestep_created_ms,
             MessageId=message_id,
             #
         )
@@ -93,8 +93,8 @@ class SimTimestep_Maker:
             raise SchemaError(f"dict {d2} missing FromGNodeInstanceId")
         if "TimeUnixS" not in d2.keys():
             raise SchemaError(f"dict {d2} missing TimeUnixS")
-        if "IrlTimeUnixMs" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing IrlTimeUnixMs")
+        if "TimestepCreatedMs" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing TimestepCreatedMs")
         if "MessageId" not in d2.keys():
             raise SchemaError(f"dict {d2} missing MessageId")
         if "TypeName" not in d2.keys():
@@ -104,7 +104,7 @@ class SimTimestep_Maker:
             FromGNodeAlias=d2["FromGNodeAlias"],
             FromGNodeInstanceId=d2["FromGNodeInstanceId"],
             TimeUnixS=d2["TimeUnixS"],
-            IrlTimeUnixMs=d2["IrlTimeUnixMs"],
+            TimestepCreatedMs=d2["TimestepCreatedMs"],
             MessageId=d2["MessageId"],
             TypeName=d2["TypeName"],
             Version="000",

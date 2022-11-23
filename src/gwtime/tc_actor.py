@@ -46,7 +46,7 @@ class TcActor(ActorBase):
             from_g_node_alias=self.alias,
             from_g_node_instance_id=self.settings.g_node_instance_id,
             time_unix_s=self.settings.initial_time_unix_s,
-            irl_time_unix_ms=int(time.time() * 1000),
+            timestep_created_ms=int(time.time() * 1000),
             message_id=str(uuid.uuid4()),
         ).tuple
 
@@ -172,7 +172,7 @@ class TcActor(ActorBase):
             from_g_node_alias=self.alias,
             from_g_node_instance_id=self.settings.g_node_instance_id,
             time_unix_s=self._time,
-            irl_time_unix_ms=int(time.time() * 1000),
+            timestep_created_ms=int(time.time() * 1000),
             message_id=str(uuid.uuid4()),
         ).tuple
         self.on_time = True
