@@ -27,7 +27,9 @@ echo "docker image name is ${DOCKER_IMAGE_NAME}"
 docker build  -t $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG --label "gridworks_docker_id=${GRIDWORKS_DOCKERIMG_ID}"  --build-arg gridworks_dockerimg_id=$GRIDWORKS_DOCKERIMG_ID .
 
 docker tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG $DOCKER_IMAGE_NAME:latest
+docker tag $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG $DOCKER_IMAGE_NAME:demo
 docker push $DOCKER_IMAGE_NAME:$DOCKER_IMAGE_TAG
+docker push $DOCKER_IMAGE_NAME:demo
 docker push $DOCKER_IMAGE_NAME:latest
 
 rm Dockerfile
