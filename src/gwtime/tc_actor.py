@@ -53,9 +53,9 @@ class TcActor(ActorBase):
         self._time: int = self.settings.initial_time_unix_s
         self.my_actors: List[str] = [
             "d1.isone.ver.keene.holly",
-            "d1.isone.ver.keene.juniper",
-            "d1.isone.ver.keene.kale",
-            "d1.isone.ver.keene.lettuce",
+            # "d1.isone.ver.keene.juniper",
+            # "d1.isone.ver.keene.kale",
+            # "d1.isone.ver.keene.lettuce",
             "d1.isone.ver.keene",
             # "dummy",
         ]
