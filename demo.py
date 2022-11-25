@@ -5,7 +5,7 @@ import dotenv
 import pendulum
 
 
-end = pendulum.datetime(year=2020, month=1, day=3, hour=5)
+#end = pendulum.datetime(year=2020, month=12, day=31, hour=5)
 
 from gwtime.config import Settings
 from gwtime.tc_actor import TcActor
@@ -17,7 +17,7 @@ time.sleep(30)
 
 tc.start()
 
-while tc._time < end.timestamp():
-    time.sleep(2)
+# while tc._time < end.timestamp():
+#     time.sleep(2)
 
-tc.stop()
+# tc.stop()
