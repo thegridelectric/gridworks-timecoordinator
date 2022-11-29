@@ -12,6 +12,7 @@ from gwtime.property_format import predicate_validator
 
 
 class Ready(BaseModel):
+    TimeUnixS: int  #
     FromGNodeAlias: str  #
     FromGNodeInstanceId: str  #
     TypeName: Literal["ready"] = "ready"
@@ -37,9 +38,12 @@ class Ready_Maker:
     type_name = "ready"
     version = "000"
 
-    def __init__(self, from_g_node_alias: str, from_g_node_instance_id: str):
+    def __init__(
+        self, time_unix_s: int, from_g_node_alias: str, from_g_node_instance_id: str
+    ):
 
         self.tuple = Ready(
+            TimeUnixS=time_unix_s,
             FromGNodeAlias=from_g_node_alias,
             FromGNodeInstanceId=from_g_node_instance_id,
             #
@@ -62,6 +66,8 @@ class Ready_Maker:
     @classmethod
     def dict_to_tuple(cls, d: dict[str, Any]) -> Ready:
         d2 = dict(d)
+        if "TimeUnixS" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing TimeUnixS")
         if "FromGNodeAlias" not in d2.keys():
             raise SchemaError(f"dict {d2} missing FromGNodeAlias")
         if "FromGNodeInstanceId" not in d2.keys():
@@ -70,6 +76,7 @@ class Ready_Maker:
             raise SchemaError(f"dict {d2} missing TypeName")
 
         return Ready(
+            TimeUnixS=d2["TimeUnixS"],
             FromGNodeAlias=d2["FromGNodeAlias"],
             FromGNodeInstanceId=d2["FromGNodeInstanceId"],
             TypeName=d2["TypeName"],

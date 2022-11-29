@@ -36,6 +36,7 @@ LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 BASE_SLEEP = 2
 
+
 class TcActor(ActorBase):
     def __init__(
         self,
@@ -84,7 +85,7 @@ class TcActor(ActorBase):
         self.paused = True
 
     def send_time(self) -> None:
-        LOGGER.info(f"{self.time_utc_str()}")
+        LOGGER.info(f"{self.time_str()}")
         if self.paused:
             LOGGER.info(f"not sending time. Paused")
             return
@@ -184,7 +185,8 @@ class TcActor(ActorBase):
     def ready_received(self, payload: Ready) -> None:
         if payload.FromGNodeAlias in self.my_actors:
             if payload.FromGNodeAlias not in self.ready:
-                self.ready.append(payload.FromGNodeAlias)
+                if payload.TimeUnixS == self._time:
+                    self.ready.append(payload.FromGNodeAlias)
             if set(self.ready) == set(self.my_actors):
                 elapsed = time.time() - (self.timestep.TimestepCreatedMs / 1000)
                 LOGGER.info(f"Timestep took {round(elapsed,2)}s")
@@ -199,5 +201,5 @@ class TcActor(ActorBase):
         LOGGER.info(f"Received Resume message")
         self.resume()
 
-    def time_utc_str(self) -> str:
+    def time_str(self) -> str:
         return pendulum.from_timestamp(self._time).strftime("%m/%d/%Y, %H:%M")

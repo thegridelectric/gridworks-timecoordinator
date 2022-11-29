@@ -11,6 +11,7 @@ from gwtime.schemata import Ready_Maker as Maker
 def test_ready_generated() -> None:
 
     d = {
+        "TimeUnixS": 1669757715,
         "FromGNodeAlias": "d1.time",
         "FromGNodeInstanceId": "eac00c51-d944-4829-aaca-847bca1b8438",
         "TypeName": "ready",
@@ -32,6 +33,7 @@ def test_ready_generated() -> None:
 
     # test Maker init
     t = Maker(
+        time_unix_s=gtuple.TimeUnixS,
         from_g_node_alias=gtuple.FromGNodeAlias,
         from_g_node_instance_id=gtuple.FromGNodeInstanceId,
     ).tuple
@@ -43,6 +45,11 @@ def test_ready_generated() -> None:
 
     d2 = dict(d)
     del d2["TypeName"]
+    with pytest.raises(SchemaError):
+        Maker.dict_to_tuple(d2)
+
+    d2 = dict(d)
+    del d2["TimeUnixS"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
@@ -59,6 +66,10 @@ def test_ready_generated() -> None:
     ######################################
     # Behavior on incorrect types
     ######################################
+
+    d2 = dict(d, TimeUnixS="1669757715.1")
+    with pytest.raises(ValidationError):
+        Maker.dict_to_tuple(d2)
 
     ######################################
     # SchemaError raised if TypeName is incorrect
