@@ -175,64 +175,65 @@ class TcActorBase(ABC):
         :param bytes body: The message body
         """
         self.latest_routing_key = basic_deliver.routing_key
-        LOGGER.debug(
+        LOGGER.info(
             f"{self.alias}: Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
         )
-        self.acknowledge_message(basic_deliver.delivery_tag)
-        try:
-            type_name = self.get_payload_type_name(basic_deliver)
-        except SchemaError:
-            return
-        self.type_name = type_name
+        self.body = body
+        # self.acknowledge_message(basic_deliver.delivery_tag)
+        # try:
+        #     type_name = self.get_payload_type_name(basic_deliver)
+        # except SchemaError:
+        #     return
+        # self.type_name = type_name
 
-        if type_name not in api_types.version_by_type_name().keys():
-            self._latest_on_message_diagnostic = (
-                OnReceiveMessageDiagnostic.UNKNOWN_TYPE_NAME
-            )
-            LOGGER.warning(
-                f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {type_name}"
-            )
-            return
+        # if type_name not in api_types.version_by_type_name().keys():
+        #     self._latest_on_message_diagnostic = (
+        #         OnReceiveMessageDiagnostic.UNKNOWN_TYPE_NAME
+        #     )
+        #     LOGGER.warning(
+        #         f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {type_name}"
+        #     )
+        #     return
 
-        try:
-            payload = api_types.TypeMakerByName[type_name].type_to_tuple(body)
-        except Exception as e:
-            LOGGER.warning(
-                f"TypeName for incoming message claimed to be {type_name}, but was not true! Failed to make a {api_types.TypeMakerByName[type_name].tuple}"
-            )
-            return
+        # try:
+        #     payload = api_types.TypeMakerByName[type_name].type_to_tuple(body)
+        # except Exception as e:
+        #     LOGGER.warning(
+        #         f"TypeName for incoming message claimed to be {type_name}, but was not true! Failed to make a {api_types.TypeMakerByName[type_name].tuple}"
+        #     )
+        #     return
 
-        routing_key: str = basic_deliver.routing_key
+        # routing_key: str = basic_deliver.routing_key
 
-        try:
-            from_alias = self.from_alias_from_routing_key(routing_key)
-        except SchemaError as e:
-            self._latest_on_message_diagnostic = (
-                OnReceiveMessageDiagnostic.FROM_GNODE_DECODING_PROBLEM
-            )
-            LOGGER.warning(
-                f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}"
-            )
-            return
-        try:
-            from_role = self.from_role_from_routing_key(routing_key)
-        except SchemaError as e:
-            self._latest_on_message_diagnostic = (
-                OnReceiveMessageDiagnostic.FROM_GNODE_DECODING_PROBLEM
-            )
-            LOGGER.warning(
-                f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}"
-            )
-            return
+        # try:
+        #     from_alias = self.from_alias_from_routing_key(routing_key)
+        # except SchemaError as e:
+        #     self._latest_on_message_diagnostic = (
+        #         OnReceiveMessageDiagnostic.FROM_GNODE_DECODING_PROBLEM
+        #     )
+        #     LOGGER.warning(
+        #         f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}"
+        #     )
+        #     return
+        # try:
+        #     from_role = self.from_role_from_routing_key(routing_key)
+        # except SchemaError as e:
+        #     self._latest_on_message_diagnostic = (
+        #         OnReceiveMessageDiagnostic.FROM_GNODE_DECODING_PROBLEM
+        #     )
+        #     LOGGER.warning(
+        #         f"IGNORING MESSAGE. {self._latest_on_message_diagnostic}: {e}"
+        #     )
+        #     return
 
-        self._latest_on_message_diagnostic = (
-            OnReceiveMessageDiagnostic.TO_DIRECT_ROUTING
-        )
-        self.route_message(
-            from_alias=from_alias,
-            from_role=from_role,
-            payload=payload,
-        )
+        # self._latest_on_message_diagnostic = (
+        #     OnReceiveMessageDiagnostic.TO_DIRECT_ROUTING
+        # )
+        # self.route_message(
+        #     from_alias=from_alias,
+        #     from_role=from_role,
+        #     payload=payload,
+        # )
 
     @abstractmethod
     def route_message(

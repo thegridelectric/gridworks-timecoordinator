@@ -1,4 +1,4 @@
-"""Tests ready type, version 000"""
+"""Tests ready type, version 001"""
 import json
 
 import pytest
@@ -15,7 +15,7 @@ def test_ready_generated() -> None:
         "FromGNodeAlias": "d1.time",
         "FromGNodeInstanceId": "eac00c51-d944-4829-aaca-847bca1b8438",
         "TypeName": "ready",
-        "Version": "000",
+        "Version": "001",
     }
 
     with pytest.raises(SchemaError):

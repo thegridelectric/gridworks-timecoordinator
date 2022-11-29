@@ -37,7 +37,7 @@ def version_by_type_name() -> Dict[str, str]:
     v: Dict[str, str] = {
         "heartbeat.a": "000",
         "pause.time": "000",
-        "ready": "000",
+        "ready": "001",
         "resume.time": "000",
         "sim.timestep": "000",
     }
@@ -54,7 +54,7 @@ def status_by_versioned_type_name() -> Dict[str, str]:
     v: Dict[str, str] = {
         "heartbeat.a.000": "Pending",
         "pause.time.000": "Pending",
-        "ready.000": "Pending",
+        "ready.001": "Pending",
         "resume.time.000": "Pending",
         "sim.timestep.000": "Pending",
     }

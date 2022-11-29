@@ -145,6 +145,8 @@ class TcActor(ActorBase):
     def route_message(
         self, from_alias: str, from_role: GNodeRole, payload: HeartbeatA
     ) -> None:
+        LOGGER.info("Received payload")
+        self.payload = payload
         if payload.TypeName == Ready_Maker.type_name:
             try:
                 self.ready_received(payload)

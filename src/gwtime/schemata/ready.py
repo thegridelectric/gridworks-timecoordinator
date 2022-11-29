@@ -1,4 +1,4 @@
-"""Type ready, version 000"""
+"""Type ready, version 001"""
 import json
 from typing import Any
 from typing import Dict
@@ -16,7 +16,7 @@ class Ready(BaseModel):
     FromGNodeAlias: str  #
     FromGNodeInstanceId: str  #
     TypeName: Literal["ready"] = "ready"
-    Version: str = "000"
+    Version: str = "001"
 
     _validator_from_g_node_alias = predicate_validator(
         "FromGNodeAlias", property_format.is_lrd_alias_format
@@ -36,7 +36,7 @@ class Ready(BaseModel):
 
 class Ready_Maker:
     type_name = "ready"
-    version = "000"
+    version = "001"
 
     def __init__(
         self, time_unix_s: int, from_g_node_alias: str, from_g_node_instance_id: str
@@ -80,5 +80,5 @@ class Ready_Maker:
             FromGNodeAlias=d2["FromGNodeAlias"],
             FromGNodeInstanceId=d2["FromGNodeInstanceId"],
             TypeName=d2["TypeName"],
-            Version="000",
+            Version="001",
         )
