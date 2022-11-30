@@ -15,6 +15,8 @@ import gwtime.config as config
 from gwtime.actor_base import ActorBase
 from gwtime.enums import GNodeRole
 from gwtime.enums import MessageCategory
+from gwtime.schemata import DebugTcReinitializeTime
+from gwtime.schemata import DebugTcReinitializeTime_Maker
 from gwtime.schemata import HeartbeatA
 from gwtime.schemata import HeartbeatA_Maker
 from gwtime.schemata import PauseTime
@@ -58,7 +60,7 @@ class TcActor(ActorBase):
             # "d1.isone.ver.keene.kale",
             # "d1.isone.ver.keene.lettuce",
             "d1.isone.ver.keene",
-            #"dummy",
+            # "dummy",
         ]
         self.ready: List[str] = []
         self.tickles: int = 0
@@ -70,7 +72,7 @@ class TcActor(ActorBase):
     def local_start(self) -> None:
         LOGGER.info("in additional_start")
         self.tickle_thread.start()
-    
+
     def local_stop(self) -> None:
         self.tickle_thread.join()
 
@@ -151,6 +153,12 @@ class TcActor(ActorBase):
             except:
                 LOGGER.warning("Error in g_node_ready_received")
                 LOGGER.warning(traceback.format_exc(True))
+        elif payload.TypeName == DebugTcReinitializeTime_Maker.type_name:
+            try:
+                self.debug_tc_reinitialize_time_received(payload)
+            except:
+                LOGGER.warning("Error in pause_time_received")
+                LOGGER.warning(traceback.format_exc(True))
         elif payload.TypeName == PauseTime_Maker.type_name:
             try:
                 self.pause_time_received(payload)
@@ -200,6 +208,17 @@ class TcActor(ActorBase):
     def resume_time_received(self, payload: ResumeTime):
         LOGGER.info(f"Received Resume message")
         self.resume()
+
+    def debug_tc_reinitialize_time_received(self, payload: DebugTcReinitializeTime):
+        self._time: int = self.settings.initial_time_unix_s
+        self.timestep: SimTimestep = SimTimestep_Maker(
+            from_g_node_alias=self.alias,
+            from_g_node_instance_id=self.settings.g_node_instance_id,
+            time_unix_s=self.settings.initial_time_unix_s,
+            timestep_created_ms=int(time.time() * 1000),
+            message_id=str(uuid.uuid4()),
+        ).tuple
+        LOGGER.info(f"Time is RESET to initial {pendulum.from_timestamp(self._time)}")
 
     def time_str(self) -> str:
         return pendulum.from_timestamp(self._time).strftime("%m/%d/%Y, %H:%M")
