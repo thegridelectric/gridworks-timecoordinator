@@ -67,13 +67,12 @@ class TcActor(ActorBase):
         self.tickle_thread: threading.Thread = threading.Thread(target=self.tickle_time)
         LOGGER.info(f"time initialized. waits for {self.my_actors}")
 
-    ########################
-    # Sends
-    ########################
-
-    def on_rabbit_ready(self) -> None:
-        LOGGER.info("in on_rabbit_ready")
+    def local_start(self) -> None:
+        LOGGER.info("in additional_start")
         self.tickle_thread.start()
+    
+    def local_stop(self) -> None:
+        self.tickle_thread.join()
 
     def resume(self) -> None:
         self.timestep.TimestepCreatedMs = int(time.time() * 1000)

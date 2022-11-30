@@ -31,7 +31,7 @@ class Supervisor(ActorBase):
 
         self.latest_time_unix_s: Optional[int] = None
 
-    def additional_rabbit_stuff_after_rabbit_base_setup_is_done(self):
+    def local_rabbit_startup(self):
         rjb = MessageCategorySymbol.rjb.value
         tc_alias_lrh = self.settings.my_time_coordinator_alias.replace(".", "-")
         binding = f"{rjb}.{tc_alias_lrh}.timecoordinator.sim-timestep"
