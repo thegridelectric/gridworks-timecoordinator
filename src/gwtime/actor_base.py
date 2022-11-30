@@ -115,7 +115,6 @@ class ActorBase(ABC):
         self.should_reconnect_consumer: bool = False
         self.was_consuming: bool = False
         self._consuming: bool = False
-        self._exit_additional_start_thread: bool = False
         # In production, experiment with higher prefetch values
         # for higher consumer throughput
         self._prefetch_count: int = 1
@@ -142,8 +141,9 @@ class ActorBase(ABC):
         self.publishing_thread.start()
         self.local_start()
         self._stopped = False
-    
+
     def local_start(self) -> None:
+        """This should be overwritten in derived class for additional threads"""
         pass
 
     def stop(self) -> None:
@@ -158,8 +158,10 @@ class ActorBase(ABC):
         self.publishing_thread.join()
         self._stopping = False
         self._stopped = True
-    
+
     def local_stop() -> None:
+        """This should be overwritten in derived class if there is a requirement
+        to stop the additional threads started in local_start"""
         pass
 
     @no_type_check
@@ -606,6 +608,8 @@ class ActorBase(ABC):
         self.start_consuming()
 
     def local_rabbit_startup(self) -> None:
+        """This should be overwritten in derived class for any additional rabbit
+        bindings. DO NOT start queues here"""
         pass
 
     @no_type_check
