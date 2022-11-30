@@ -58,7 +58,7 @@ class TcActor(ActorBase):
             # "d1.isone.ver.keene.kale",
             # "d1.isone.ver.keene.lettuce",
             "d1.isone.ver.keene",
-            # "dummy",
+            #"dummy",
         ]
         self.ready: List[str] = []
         self.tickles: int = 0
@@ -144,7 +144,6 @@ class TcActor(ActorBase):
     def route_message(
         self, from_alias: str, from_role: GNodeRole, payload: HeartbeatA
     ) -> None:
-        LOGGER.info("Received payload")
         self.payload = payload
         if payload.TypeName == Ready_Maker.type_name:
             try:
