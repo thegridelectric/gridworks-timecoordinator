@@ -116,16 +116,17 @@ class TcActor(ActorBase):
                     time.sleep(base_sleep)
                 else:
                     self.tickles += 1
-                    waiting_s = 2 ** (self.tickles - 1)
+                    wait_exponent = int(self.tickles / 2)
+                    waiting_s = 2 ** wait_exponent
                     time.sleep(waiting_s)
                     elapsed = time.time() - (self.timestep.TimestepCreatedMs / 1000)
                     missing = list(set(self.my_actors) - set(self.ready))
                     LOGGER.info(f"Tickle {self.tickles}, missing {missing}")
 
                     self.send_time()
-                    if self.tickles >= 5:
+                    if self.tickles >= 7:
                         self.paused = True
-                        LOGGER.info(f"Pausing time after 5 tickles")
+                        LOGGER.info(f"Pausing time after 7 tickles")
 
     @no_type_check
     def send_heartbeat_to_super(self) -> None:

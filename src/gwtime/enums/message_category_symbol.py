@@ -9,7 +9,7 @@ class MessageCategorySymbol(StrEnum):
     rj = auto()
     rjb = auto()
     s = auto()
-    mq = auto()
+    gw = auto()
     post = auto()
     postack = auto()
     get = auto()
