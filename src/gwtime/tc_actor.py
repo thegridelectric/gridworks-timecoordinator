@@ -58,9 +58,9 @@ class TcActor(ActorBase):
         self.my_actors: List[str] = [
             "d1.isone.ver.keene",
             "d1.isone.ver.keene.holly",
-            # "d1.isone.ver.keene.juniper",
-            # "d1.isone.ver.keene.kale",
-            # "d1.isone.ver.keene.lettuce",
+            "d1.isone.ver.keene.juniper",
+            "d1.isone.ver.keene.kale",
+            "d1.isone.ver.keene.lettuce",
             # "dummy",
         ]
         self.ready: List[str] = []
@@ -118,7 +118,7 @@ class TcActor(ActorBase):
                 else:
                     self.tickles += 1
                     wait_exponent = int(self.tickles / 2)
-                    waiting_s = 2 ** wait_exponent
+                    waiting_s = 2**wait_exponent
                     time.sleep(waiting_s)
                     elapsed = time.time() - (self.timestep.TimestepCreatedMs / 1000)
                     missing = list(set(self.my_actors) - set(self.ready))
