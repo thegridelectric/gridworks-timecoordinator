@@ -3,7 +3,6 @@ import functools
 import logging
 import threading
 import time
-import traceback
 import uuid
 from abc import ABC
 from abc import abstractmethod
@@ -91,7 +90,6 @@ class ActorBase(ABC):
         self,
         settings: Settings,
     ):
-        self.settings: Settings = settings
         self.latest_routing_key: Optional[str] = None
         self.shutting_down: bool = False
         self.alias: str = settings.g_node_alias
@@ -119,7 +117,7 @@ class ActorBase(ABC):
         # for higher consumer throughput
         self._prefetch_count: int = 1
         self._reconnect_delay: int = 0
-        self._url: str = self.settings.rabbit.url.get_secret_value()
+        self._url: str = settings.rabbit.url.get_secret_value()
 
         self.is_debug_mode: bool = False
         self.consuming_thread: threading.Thread = threading.Thread(
@@ -143,7 +141,9 @@ class ActorBase(ABC):
         self._stopped = False
 
     def local_start(self) -> None:
-        """This should be overwritten in derived class for additional threads"""
+        """This should be overwritten in derived class for additional threads.
+        It cannot assume the rabbit channels are established and that
+        messages can be received or sent."""
         pass
 
     def stop(self) -> None:
@@ -337,10 +337,8 @@ class ActorBase(ABC):
             LOGGER.debug(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
             return OnSendMessageDiagnostic.MESSAGE_SENT
 
-        except BaseException as err:
-            LOGGER.error("Problem w publish channel")
-            LOGGER.error(traceback.format_exc())
-            LOGGER.error(f"{err.args}")
+        except BaseException:
+            LOGGER.exception("Problem w publish channel")
             return OnSendMessageDiagnostic.UNKNOWN_ERROR
 
     #####################

@@ -45,6 +45,7 @@ class TcActor(ActorBase):
         settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv()),
     ):
         super().__init__(settings=settings)
+        self.settings: config.Settings = settings
         self.timestep: SimTimestep = SimTimestep_Maker(
             from_g_node_alias=self.alias,
             from_g_node_instance_id=self.settings.g_node_instance_id,
@@ -55,11 +56,11 @@ class TcActor(ActorBase):
 
         self._time: int = self.settings.initial_time_unix_s
         self.my_actors: List[str] = [
+            "d1.isone.ver.keene",
             "d1.isone.ver.keene.holly",
             # "d1.isone.ver.keene.juniper",
             # "d1.isone.ver.keene.kale",
             # "d1.isone.ver.keene.lettuce",
-            "d1.isone.ver.keene",
             # "dummy",
         ]
         self.ready: List[str] = []
