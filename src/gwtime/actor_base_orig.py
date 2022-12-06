@@ -136,7 +136,7 @@ class ActorBase(ABC):
 
     def start(self) -> None:
         self.consuming_thread.start()
-        # self.publishing_thread.start()
+        self.publishing_thread.start()
         self.local_start()
         self._stopped = False
 
@@ -151,7 +151,7 @@ class ActorBase(ABC):
         self.prepare_for_death()
         while self.actor_main_stopped is False:
             time.sleep(self.SHUTDOWN_INTERVAL)
-        # self.stop_publisher()
+        self.stop_publisher()
         self.stop_consumer()
         self.local_stop()
         self.consuming_thread.join()
@@ -320,39 +320,25 @@ class ActorBase(ABC):
         else:
             raise Exception(f"Does not handle MessageCategory {message_category}")
 
-        # if self._publish_channel is None:
-        #     LOGGER.error(f"No publish channel so not sending {routing_key}")
-        #     return OnSendMessageDiagnostic.CHANNEL_NOT_OPEN
-        # if not self._publish_channel.is_open:
-        #     LOGGER.error(f"Publish channel not open so not sending {routing_key}")
-        #     return OnSendMessageDiagnostic.CHANNEL_NOT_OPEN
-
-        if self._consume_channel is None:
-            LOGGER.error(f"No channel so not sending {routing_key}")
+        if self._publish_channel is None:
+            LOGGER.error(f"No publish channel so not sending {routing_key}")
             return OnSendMessageDiagnostic.CHANNEL_NOT_OPEN
-        if not self._consume_channel.is_open:
-            LOGGER.error(f"Channel not open so not sending {routing_key}")
+        if not self._publish_channel.is_open:
+            LOGGER.error(f"Publish channel not open so not sending {routing_key}")
             return OnSendMessageDiagnostic.CHANNEL_NOT_OPEN
 
         try:
-            self._consume_channel.basic_publish(
+            self._publish_channel.basic_publish(
                 exchange=self._publish_exchange,
                 routing_key=routing_key,
                 body=payload.as_type(),
                 properties=properties,
             )
-            # self._publish_channel.basic_publish(
-            #     exchange=self._publish_exchange,
-            #     routing_key=routing_key,
-            #     body=payload.as_type(),
-            #     properties=properties,
-            # )
             LOGGER.debug(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
             return OnSendMessageDiagnostic.MESSAGE_SENT
 
         except BaseException:
-            LOGGER.exception("Problem publishing w consume channel")
-            # LOGGER.exception("Problem w publish channel")
+            LOGGER.exception("Problem w publish channel")
             return OnSendMessageDiagnostic.UNKNOWN_ERROR
 
     #####################
