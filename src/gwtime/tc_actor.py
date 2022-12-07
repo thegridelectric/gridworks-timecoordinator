@@ -200,6 +200,7 @@ class TcActor(ActorBase):
             if set(self.ready) == set(self.my_actors):
                 elapsed = time.time() - (self.timestep.TimestepCreatedMs / 1000)
                 LOGGER.info(f"Timestep took {round(elapsed,2)}s")
+                self.tickles = 0
                 self.step()
                 self.send_time()
 

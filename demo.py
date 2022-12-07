@@ -9,7 +9,7 @@ from gwtime.tc_actor import TcActor
 
 
 tc = TcActor(settings=Settings(_env_file=dotenv.find_dotenv()))
-time.sleep(30)
+time.sleep(5)
 
 
 tc.start()
