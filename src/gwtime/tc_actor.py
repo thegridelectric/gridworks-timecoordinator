@@ -59,7 +59,7 @@ class TcActor(ActorBase):
             "d1.isone.ver.keene",
             "d1.isone.ver.keene.holly",
             "d1.isone.ver.keene.juniper",
-            "d1.isone.ver.keene.kale",
+            "d1.isone.ver.keene.violet",
             "d1.isone.ver.keene.lettuce",
             # "dummy",
         ]

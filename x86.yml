@@ -14,7 +14,7 @@ services:
       - "dev"
     hostname: rabbit
     container_name: tc-dev-rabbit
-    image: "jessmillar/dev-rabbit-x86:chaos__f13d33c__20221121"
+    image: "jessmillar/dev-rabbit-x86:chaos__06181e7__20221223"
     ports:
       - 1885:1885
       - 4369:4369
