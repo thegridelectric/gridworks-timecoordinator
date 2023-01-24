@@ -3,12 +3,12 @@ from typing import Dict
 from typing import List
 from typing import no_type_check
 
-from gwtime.schemata import DebugTcReinitializeTime_Maker
-from gwtime.schemata import HeartbeatA_Maker
-from gwtime.schemata import PauseTime_Maker
-from gwtime.schemata import Ready_Maker
-from gwtime.schemata import ResumeTime_Maker
-from gwtime.schemata import SimTimestep_Maker
+from gwtime.types import DebugTcReinitializeTime_Maker
+from gwtime.types import HeartbeatA_Maker
+from gwtime.types import PauseTime_Maker
+from gwtime.types import Ready_Maker
+from gwtime.types import ResumeTime_Maker
+from gwtime.types import SimTimestep_Maker
 
 
 TypeMakerByName: Dict[str, HeartbeatA_Maker] = {}
@@ -38,7 +38,7 @@ def version_by_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "debug.tc.reinitialize.time": "000",
-        "heartbeat.a": "000",
+        "heartbeat.a": "100",
         "pause.time": "000",
         "ready": "001",
         "resume.time": "000",
@@ -56,7 +56,7 @@ def status_by_versioned_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "debug.tc.reinitialize.time.000": "Pending",
-        "heartbeat.a.000": "Pending",
+        "heartbeat.a.100": "Pending",
         "pause.time.000": "Pending",
         "ready.001": "Pending",
         "resume.time.000": "Pending",

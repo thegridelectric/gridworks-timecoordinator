@@ -38,7 +38,7 @@
                     </xsl:if>
                     </xsl:variable>
                 <FileSetFile>
-                            <xsl:element name="RelativePath"><xsl:text>../../../../tests/schemata/test_</xsl:text>
+                            <xsl:element name="RelativePath"><xsl:text>../../../../tests/types/test_</xsl:text>
                             <xsl:value-of select="translate($type-name,'.','_')"/><xsl:text>.py</xsl:text></xsl:element>
 
                     <OverwriteMode><xsl:value-of select="$overwrite-mode"/></OverwriteMode>
@@ -52,12 +52,12 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from gwtime.errors import SchemaError
-from gwtime.schemata import </xsl:text>
+from gridworks.errors import SchemaError
+from gwtime.types import </xsl:text>
 <xsl:value-of select="$class-name"/><xsl:text>_Maker as Maker</xsl:text>
 <xsl:for-each select="$airtable//GtEnums/GtEnum[(normalize-space(Alias) !='')  and (count(TypesThatUse[text()=$schema-id])>0)]">
 <xsl:text>
-from gwtime.enums import </xsl:text>
+from gridworks.enums import </xsl:text>
 <xsl:call-template name="nt-case">
     <xsl:with-param name="mp-schema-text" select="LocalName" />
 </xsl:call-template>

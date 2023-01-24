@@ -37,7 +37,7 @@ from typing import no_type_check
 <xsl:variable name="local-alias" select="AliasRoot" />
 
 <xsl:text>
-from gwtime.schemata import </xsl:text>
+from gwtime.types import </xsl:text>
 <xsl:call-template name="nt-case">
     <xsl:with-param name="mp-schema-text" select="AliasRoot" />
 </xsl:call-template>

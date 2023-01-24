@@ -2,12 +2,13 @@ import time
 from typing import Callable
 from typing import Optional
 
+from gridworks.enums import GNodeRole
+
 from gwtime.actor_base import ActorBase
 from gwtime.actor_base import OnSendMessageDiagnostic
 from gwtime.config import Settings
-from gwtime.enums import GNodeRole
-from gwtime.schemata import HeartbeatA
-from gwtime.schemata import HeartbeatA_Maker
+from gwtime.types import HeartbeatA
+from gwtime.types import HeartbeatA_Maker
 
 
 def wait_for(

@@ -5,28 +5,27 @@ import time
 import traceback
 import uuid
 from typing import List
-from typing import Optional
 from typing import no_type_check
 
 import dotenv
 import pendulum
+from gridworks.actor_base import ActorBase
+from gridworks.enums import GNodeRole
+from gridworks.enums import MessageCategory
 
 import gwtime.config as config
-from gwtime.actor_base import ActorBase
-from gwtime.enums import GNodeRole
-from gwtime.enums import MessageCategory
-from gwtime.schemata import DebugTcReinitializeTime
-from gwtime.schemata import DebugTcReinitializeTime_Maker
-from gwtime.schemata import HeartbeatA
-from gwtime.schemata import HeartbeatA_Maker
-from gwtime.schemata import PauseTime
-from gwtime.schemata import PauseTime_Maker
-from gwtime.schemata import Ready
-from gwtime.schemata import Ready_Maker
-from gwtime.schemata import ResumeTime
-from gwtime.schemata import ResumeTime_Maker
-from gwtime.schemata import SimTimestep
-from gwtime.schemata import SimTimestep_Maker
+from gwtime.types import DebugTcReinitializeTime
+from gwtime.types import DebugTcReinitializeTime_Maker
+from gwtime.types import HeartbeatA
+from gwtime.types import HeartbeatA_Maker
+from gwtime.types import PauseTime
+from gwtime.types import PauseTime_Maker
+from gwtime.types import Ready
+from gwtime.types import Ready_Maker
+from gwtime.types import ResumeTime
+from gwtime.types import ResumeTime_Maker
+from gwtime.types import SimTimestep
+from gwtime.types import SimTimestep_Maker
 
 
 LOG_FORMAT = (

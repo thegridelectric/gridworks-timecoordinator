@@ -9,6 +9,7 @@
 /src/*.egg-info/
 __pycache__/
 
+.env
 
 .DS_Store
 .vscode

@@ -5,14 +5,15 @@
 
 # import pika
 
+from gridworks.enums import MessageCategory
+from gridworks.enums import MessageCategorySymbol
+
 # from gnf.actor_base import RoutingKeyType
 import gwtime.config as config
 from gwtime.actor_base import OnReceiveMessageDiagnostic
 from gwtime.actor_base import OnSendMessageDiagnostic
-from gwtime.enums import MessageCategory
-from gwtime.enums import MessageCategorySymbol
-from gwtime.schemata import HeartbeatA
-from gwtime.schemata import HeartbeatA_Maker
+from gwtime.types import HeartbeatA
+from gwtime.types import HeartbeatA_Maker
 
 from .utils import SupervisorStubRecorder
 from .utils import TimeCoordinatorStubRecorder

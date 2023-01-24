@@ -20,65 +20,46 @@
         <FileSet>
 
             <FileSetFile>
-                    <xsl:element name="RelativePath"><xsl:text>../../../../src/gwtime/types/__init__.py</xsl:text></xsl:element>
+                    <xsl:element name="RelativePath"><xsl:text>../../../../../../docs/sdk-types.rst</xsl:text></xsl:element>
 
                 <OverwriteMode>Always</OverwriteMode>
                 <xsl:element name="FileContents">
 <xsl:text>
-""" List of all the schema types """
-</xsl:text>
+
+SDK for `gridworks-atn &lt;https://pypi.org/project/gridworks-atn/&gt;`_  Types
+===========================================================================
+
+The Python classes enumerated below provide an interpretation of gridworks-atn
+type instances (serialized JSON) as Python objects. Types are the building
+blocks for all GridWorks APIs. You can read more about how they work
+`here &lt;https://gridworks.readthedocs.io/en/latest/api-sdk-abi.html&gt;`_, and
+examine their API specifications `here &lt;apis/types.html&gt;`_.
+The Python classes below also come with methods for translating back and
+forth between type instances and Python objects.
+
+
+.. automodule:: gwtime.types
+
+.. toctree::
+   :maxdepth: 1
+   :caption: TYPE SDKS
+
+    </xsl:text>
 <xsl:for-each select="$airtable//ProtocolTypes/ProtocolType[(normalize-space(ProtocolName) ='gwtime')]">
 <xsl:sort select="TypeName" data-type="text"/>
 <xsl:variable name="schema-id" select="Type"/>
 <xsl:for-each select="$airtable//Schemas/Schema[(SchemaId = $schema-id)  and (Status = 'Active' or Status = 'Pending') and (ProtocolCategory = 'Json' or ProtocolCategory = 'GwAlgoSerial')]">
-
 <xsl:variable name="local-alias" select="AliasRoot" />
-
-<xsl:text>
-from gwtime.types.</xsl:text>
-<xsl:value-of select="translate(AliasRoot,'.','_')"/>
-<xsl:text> import </xsl:text>
 <xsl:call-template name="nt-case">
     <xsl:with-param name="mp-schema-text" select="AliasRoot" />
 </xsl:call-template>
-<xsl:text>
-from gwtime.types.</xsl:text>
-<xsl:value-of select="translate(AliasRoot,'.','_')"/>
-<xsl:text> import </xsl:text>
-<xsl:call-template name="nt-case">
-    <xsl:with-param name="mp-schema-text" select="AliasRoot" />
-</xsl:call-template>
-<xsl:text>_Maker</xsl:text>
+<xsl:text>  &lt;types/</xsl:text>
+<xsl:value-of select="translate(AliasRoot,'.','-')"/>
+<xsl:text>&gt;
+    </xsl:text>
+
 </xsl:for-each>
 </xsl:for-each>
-<xsl:text>
-
-
-__all__ = [</xsl:text>
-<xsl:for-each select="$airtable//ProtocolTypes/ProtocolType[(normalize-space(ProtocolName) ='gwtime')]">
-<xsl:variable name="schema-id" select="Type"/>
-<xsl:for-each select="$airtable//Schemas/Schema[(SchemaId = $schema-id)  and (Status = 'Active' or Status = 'Pending') and (ProtocolCategory = 'Json' or ProtocolCategory = 'GwAlgoSerial')]">
-<xsl:variable name="local-alias" select="AliasRoot" />
-<xsl:text>
-    "</xsl:text>
-    <xsl:call-template name="nt-case">
-        <xsl:with-param name="mp-schema-text" select="AliasRoot" />
-    </xsl:call-template>
-    <xsl:text>",</xsl:text>
-<xsl:text>
-    "</xsl:text>
-    <xsl:call-template name="nt-case">
-        <xsl:with-param name="mp-schema-text" select="AliasRoot" />
-    </xsl:call-template>
-    <xsl:text>_Maker",</xsl:text>
-</xsl:for-each>
-</xsl:for-each>
-<xsl:text>
-]
-
-</xsl:text>
-
-
 
                 </xsl:element>
             </FileSetFile>
