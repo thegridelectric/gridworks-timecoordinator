@@ -1,24 +1,7 @@
-.mypy_cache/
-/.coverage
-/.coverage.*
-/.nox/
-/.python-version
-/.pytype/
-/dist/
-/docs/_build/
-/src/*.egg-info/
+.venv/
 __pycache__/
-
-
-.DS_Store
-.vscode
-.idea
-
-# scratch files and folders
-scratch.ipynb
-cook*
-
-# Code generation airtable
-CodeGenerationTools/GridworksCore/SSoT/Airtable.xml
-CodeGenerationTools/GridworksCore/SassyMQ/
-.ssotme
+*.egg-info/
+dist/
+.pytest_cache/
+.ruff_cache/
+.vscode/
